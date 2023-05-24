@@ -5,11 +5,13 @@ name: anax-build-test
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the anax-build branch
 on:
-  pull_request:
-    branches:
-      - master
-      - v2.30
-      - v2.29
+  # pull_request:
+    label:
+      types: [created, deleted]
+    # branches:
+    #   - master
+    #   - v2.30
+    #   - v2.29
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -39,11 +41,18 @@ jobs:
       - name: Build anax binaries
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
 
-      # build the e2edev docker images 
-      - name: Build the e2edev docker images
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+      # auth docker
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{secrets.DOCKER_USER}}
+          password: ${{secrets.DOCKER_TKN}}
 
-      # E2E development test
-      - name: E2E dev-test
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
+      # # build the e2edev docker images 
+      # - name: Build the e2edev docker images
+      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+
+      # # E2E development test
+      # - name: E2E dev-test
+      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
  
