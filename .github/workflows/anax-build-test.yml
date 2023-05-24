@@ -30,15 +30,15 @@ jobs:
         with:
            path: go/src/github.com/${{github.repository}}
       
-      # prepare the environment
-      - name: Set up golang 1.19.2
-        uses: actions/setup-go@v2
-        with:
-           go-version: '1.19.2'
+      # # prepare the environment
+      # - name: Set up golang 1.19.2
+      #   uses: actions/setup-go@v2
+      #   with:
+      #      go-version: '1.19.2'
 
-      # build anax binaries
-      - name: Build anax binaries
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
+      # # build anax binaries
+      # - name: Build anax binaries
+      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
 
       # auth docker
       - name: Login to Docker Hub
