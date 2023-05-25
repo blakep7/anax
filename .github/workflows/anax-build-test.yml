@@ -38,7 +38,7 @@ jobs:
 
       # build anax binaries
       - name: Build anax binaries
-        run: cd ${GOPATH}/src/github.com/${{github.repository}} && make
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
 
       # auth docker
       - name: Login to Docker Hub
@@ -46,7 +46,19 @@ jobs:
         with:
           username: ${{secrets.DOCKER_USER}}
           password: ${{secrets.DOCKER_TKN}}
+        
+      # configure version env variables
+      - name: Config Version Variables
+        run: ./.github/scripts/configure_versions_script_sh
+        shell: bash
 
+      # Check env var
+      - name: DEBUG -- Check Env Vars
+        run: |
+          echo $ANAX_IMAGE_VERSION |
+          echo $CSS_IMAGE_VERSION |
+          echo $ESS_IMAGE_VERSION
+          
       # # build the e2edev docker images 
       # - name: Build the e2edev docker images
       #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
