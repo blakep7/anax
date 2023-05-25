@@ -1,3 +1,4 @@
+#!/bin/bash
 # Navigate to proper path, (Redundant?)
 # cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
 
