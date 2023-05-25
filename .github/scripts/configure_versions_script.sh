@@ -8,9 +8,10 @@ ORIG_CSS_IMAGE_VERSION=$(sed -n 's/CSS_IMAGE_VERSION ?= //p' Makefile | cut -d '
 ORIG_ESS_IMAGE_VERSION=$(sed -n 's/ESS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g') #escape delim '\$' not working? term problem? 
 
 # Get build numbers
-ANAX_IMAGE_VERSION="${ORIG_ANAX_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
-CSS_IMAGE_VERSION="${ORIG_CSS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
-ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
+export ANAX_IMAGE_VERSION="${ORIG_ANAX_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
+export CSS_IMAGE_VERSION="${ORIG_CSS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
+export ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
+
 
 # Unique version hashing not needed as of now
 # # //now Anax things and ESS/CSS will have same date/timestamp hash
