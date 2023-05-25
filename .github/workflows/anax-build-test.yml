@@ -49,8 +49,7 @@ jobs:
         
       # configure version env variables
       - name: Config Version Variables
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} | ./.github/scripts/configure_versions_script_sh
-        shell: bash
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script_sh
 
       # Check env var
       - name: DEBUG -- Check Env Vars
