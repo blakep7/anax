@@ -46,10 +46,15 @@ jobs:
         with:
           username: ${{secrets.DOCKER_USER}}
           password: ${{secrets.DOCKER_TKN}}
-        
+      
+      - name: Output run number
+        run: echo ${{github.run_number}}
+
       # configure version env variables
       - name: Config Version Variables
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
+        env:
+          GITHUB_BUILD_NUMBER: ${{github.run_number}}
 
       # Check env var
       - name: DEBUG -- Check Env Vars
