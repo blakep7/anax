@@ -49,7 +49,11 @@ jobs:
         
       # configure version env variables
       - name: Config Version Variables
-        run: echo | pwd
+        run: |
+          echo | pwd |
+          ls |
+          cd /go
+          ls
 
       # Check env var
       - name: DEBUG -- Check Env Vars
