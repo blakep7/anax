@@ -58,7 +58,7 @@ jobs:
 
       # Check env var
       - name: DEBUG -- Check Env Vars
-        run: echo $ANAX_IMAGE_VERSION
+        run: echo ${env.ANAX_IMAGE_VERSION}
           
       # # build the e2edev docker images 
       # - name: Build the e2edev docker images
