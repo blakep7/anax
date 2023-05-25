@@ -1,4 +1,6 @@
-cd ../..
+# Navigate to proper path, (Redundant?)
+# cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+
 # Get current versions
 ORIG_ANAX_IMAGE_VERSION=$(sed -n 's/export VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g')
 ORIG_CSS_IMAGE_VERSION=$(sed -n 's/CSS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g')
