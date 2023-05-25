@@ -49,13 +49,13 @@ jobs:
         
       # configure version env variables
       - name: Config Version Variables
-        run: ls
+        run: ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ls -la
 
       # Check env var
       - name: DEBUG -- Check Env Vars
         run: |
-          echo $ANAX_IMAGE_VERSION |
-          echo $CSS_IMAGE_VERSION |
+          echo $ANAX_IMAGE_VERSION &&
+          echo $CSS_IMAGE_VERSION &&
           echo $ESS_IMAGE_VERSION
           
       # # build the e2edev docker images 
