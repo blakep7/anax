@@ -8,7 +8,7 @@ ORIG_CSS_IMAGE_VERSION=$(sed -n 's/CSS_IMAGE_VERSION ?= //p' Makefile | cut -d '
 ORIG_ESS_IMAGE_VERSION=$(sed -n 's/ESS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g') #escape delim '\$' not working? term problem? 
 
 # Get build numbers
-GITHUB_BUILD_NUMBER=${{github.run_number}}
+GITHUB_BUILD_NUMBER=${github.run_number}
 ANAX_IMAGE_VERSION="${ORIG_ANAX_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
 CSS_IMAGE_VERSION="${ORIG_CSS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
 ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${GITHUB_BUILD_NUMBER}"
