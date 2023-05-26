@@ -65,6 +65,7 @@ jobs:
       
       - name: Pre-Build
         run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make temp-mod-version
           make i18n-catalog
           make
