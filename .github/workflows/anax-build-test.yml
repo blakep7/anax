@@ -27,6 +27,16 @@ jobs:
           - architecture: "ppc64el"
             platform: "mac"
     
+    env:
+      arch: ${{matrix.architecture}}
+      BUILD_NUMBER: ${{github.run_number}}
+      IMAGE_REPO: blakep7/anax-test-repo #Change to secret?
+      ANAX_IMAGE_VERSION: ''      # Updated by "Config version variables step"
+      CSS_IMAGE_VERSION: ''
+      ESS_IMAGE_VERSION: ''
+      GOPATH: /home/runner/work/anax/anax/go
+
+
     steps:
       # auth docker
       - name: Login to Docker Hub
@@ -37,12 +47,18 @@ jobs:
 
       - name: Checkout Github Repo
         uses: actions/checkout@v2
+        with:
+            path: go/src/github.com/${{github.repository}}
+      
+      # prepare the environment
+      - name: Set up golang 1.19.2
+        uses: actions/setup-go@v2
+        with:
+            go-version: '1.19.2'
 
       # configure version env variables
       - name: Config Version Variables
         run: ./.github/scripts/configure_versions_script.sh
-        env:
-          GITHUB_BUILD_NUMBER: ${{github.run_number}}
       
       - name: Test Env Var
         run: echo $ANAX_IMAGE_VERSION
@@ -51,11 +67,9 @@ jobs:
         if: matrix.architecture != 'mac'
         run: make debpkgs
         env:
-          arch: ${{matrix.architecture}}
-          IMAGE_REPO:
-          BUILD_NUMBER: ${{github.run_number}}
-          VERSION:
-          DISTRO:
+          VERSION: $ANAX_IMAGE_VERSION
+
+
           
 
 
