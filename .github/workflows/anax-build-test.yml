@@ -60,12 +60,12 @@ jobs:
       - name: Config Version Variables
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
       
-      - name: Test Env Var
+      - name: DEBUG -- Test Env Var
         run: echo $ANAX_IMAGE_VERSION
 
       - name: Make Debian Packages
         if: matrix.architecture != 'mac'
-        run: make debpkgs
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make debpkgs
         env:
           VERSION: $ANAX_IMAGE_VERSION
 
