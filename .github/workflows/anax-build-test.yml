@@ -36,7 +36,7 @@ jobs:
           password: ${{secrets.DOCKER_TKN}}
 
       - name: Checkout Github Repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
 
       # configure version env variables
       - name: Config Version Variables
