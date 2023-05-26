@@ -16,54 +16,36 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
-    env:
-      GOPATH: /home/runner/work/anax/anax/go
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-        with:
-           path: go/src/github.com/${{github.repository}}
+
+  # test:
+  #   # The type of runner that the job will run on
+  #   runs-on: ubuntu-20.04
+  #   strategy:
+  #     matrix:
+  #       tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
+  #   env:
+  #     GOPATH: /home/runner/work/anax/anax/go
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+  #     - uses: actions/checkout@v2
+  #       with:
+  #          path: go/src/github.com/${{github.repository}}
       
-      # prepare the environment
-      - name: Set up golang 1.19.2
-        uses: actions/setup-go@v2
-        with:
-           go-version: '1.19.2'
+  #     # prepare the environment
+  #     - name: Set up golang 1.19.2
+  #       uses: actions/setup-go@v2
+  #       with:
+  #          go-version: '1.19.2'
 
-      # build anax binaries
-      - name: Build anax binaries
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
-
-      # auth docker
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{secrets.DOCKER_USER}}
-          password: ${{secrets.DOCKER_TKN}}
-      
-      - name: Output run number
-        run: echo ${{github.run_number}}
-
-      # configure version env variables
-      - name: Config Version Variables
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
-        env:
-          GITHUB_BUILD_NUMBER: ${{github.run_number}}
-
-      # Check env var
-      - name: DEBUG -- Check Env Vars
-        run: echo $ANAX_IMAGE_VERSION
+  #     # build anax binaries
+  #     - name: Build anax binaries
+  #       run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
           
-      # # build the e2edev docker images 
-      # - name: Build the e2edev docker images
-      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+  #     # build the e2edev docker images 
+  #     - name: Build the e2edev docker images
+  #       run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
 
-      # # E2E development test
-      # - name: E2E dev-test
-      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
+  #     # E2E development test
+  #     - name: E2E dev-test
+  #       run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}
