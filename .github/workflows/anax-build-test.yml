@@ -63,7 +63,7 @@ jobs:
       - name: DEBUG -- Test Env Var
         run: echo $ANAX_IMAGE_VERSION
       
-      - name: Build Anax Binaries and 
+      - name: Build Anax Binaries and #SOMETHING?
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make temp-mod-version
@@ -88,11 +88,11 @@ jobs:
       # - name: Deploy RPM Packages to Dockerhub
       #   #(need to build dckr with tar filled with rpm files)
 
-      - name: Make Mac Packages
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'arm64') && matrix.platform == 'mac'
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make macpkg
-        env:
-          VERSION: ${{env.ANAX_IMAGE_VERSION}}
+      # - name: Make Mac Packages
+      #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'arm64') && matrix.platform == 'mac'
+      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make macpkg
+      #   env:
+      #     VERSION: ${{env.ANAX_IMAGE_VERSION}}
 
       # - name: Deploy Mac Packages to Dockerhub
       #   #(need to build dckr with tar filled with rpm files)
