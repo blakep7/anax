@@ -26,6 +26,10 @@ jobs:
             platform: "mac"
           - architecture: "ppc64el"
             platform: "mac"
+    env:
+      ANAX_IMAGE_VERSION: ''
+      CSS_IMAGE_VERSION: ''
+      ESS_IMAGE_VERSION: ''
     
     steps:
       # auth docker
@@ -43,6 +47,17 @@ jobs:
         run: ./.github/scripts/configure_versions_script.sh
         env:
           GITHUB_BUILD_NUMBER: ${{github.run_number}}
+      
+      - name: Test Env Var
+        run: echo $ANAX_IMAGE_VERSION
+        
+      # - name: Make Debian Packages
+      #   if: (${{matrix.architecture}} != "mac")
+      #   run: make debpkgs
+      #   env:
+      #     arch: ${{matrix.architecture}}
+      #     IMAGE_REPO:
+          
 
 
   # test:
