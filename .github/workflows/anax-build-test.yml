@@ -22,7 +22,9 @@ jobs:
         architecture: ["amd64", "arm64", "armhf", "ppc64el"]
         platform: ["linux", "mac"]
         exclude:
-          - architecture: ["armhf", "ppc64el"]
+          - architecture: "armhf"
+            platform: "mac"
+          - architecture: "ppc64el"
             platform: "mac"
     
     steps:
