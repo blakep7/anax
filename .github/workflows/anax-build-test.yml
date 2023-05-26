@@ -74,7 +74,7 @@ jobs:
         if: matrix.architecture != 'mac'
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make debpkgs
         env:
-          VERSION: $ANAX_IMAGE_VERSION
+          VERSION: ${{env.ANAX_IMAGE_VERSION}}
 
 
           
