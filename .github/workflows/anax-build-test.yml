@@ -35,9 +35,13 @@ jobs:
           username: ${{secrets.DOCKER_USER}}
           password: ${{secrets.DOCKER_TKN}}
 
+      - name: Checkout Github Repo
+        uses: actions/checkout@v4
+
       # configure version env variables
       - name: Config Version Variables
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
+        run: ls -la 
+          #cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
         env:
           GITHUB_BUILD_NUMBER: ${{github.run_number}}
 
