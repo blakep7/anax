@@ -23,6 +23,7 @@ echo "***Anax Version: ${ANAX_IMAGE_VERSION}"
 echo "***CSS Version: ${CSS_IMAGE_VERSION}"
 echo "***ESS Version: ${ESS_IMAGE_VERSION}"
 
+# Put script variables into job env variables
 echo "ANAX_IMAGE_VERSION=$ANAX_IMAGE_VERSION" >> $GITHUB_ENV
 echo "CSS_IMAGE_VERSION=$CSS_IMAGE_VERSION" >> $GITHUB_ENV
 echo "ESS_IMAGE_VERSION=$ESS_IMAGE_VERSION" >> $GITHUB_ENV
