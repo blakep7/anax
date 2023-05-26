@@ -19,17 +19,13 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        architecture: ["amd64", "arm64", "armhf", "ppc64el"]
-        platform: ["linux", "mac"]
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
+        platform: ['linux', 'mac']
         exclude:
           - architecture: "armhf"
             platform: "mac"
           - architecture: "ppc64el"
             platform: "mac"
-    env:
-      ANAX_IMAGE_VERSION: ''
-      CSS_IMAGE_VERSION: ''
-      ESS_IMAGE_VERSION: ''
     
     steps:
       # auth docker
@@ -50,13 +46,16 @@ jobs:
       
       - name: Test Env Var
         run: echo $ANAX_IMAGE_VERSION
-        
-      # - name: Make Debian Packages
-      #   if: (${{matrix.architecture}} != "mac")
-      #   run: make debpkgs
-      #   env:
-      #     arch: ${{matrix.architecture}}
-      #     IMAGE_REPO:
+
+      - name: Make Debian Packages
+        if: matrix.architecture != 'mac'
+        run: make debpkgs
+        env:
+          arch: ${{matrix.architecture}}
+          IMAGE_REPO:
+          BUILD_NUMBER: ${{github.run_number}}
+          VERSION:
+          DISTRO:
           
 
 
