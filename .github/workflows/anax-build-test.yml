@@ -22,15 +22,15 @@ jobs:
         architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
         platform: ['linux', 'mac']
         exclude:
-          - architecture: "armhf"
-            platform: "mac"
-          - architecture: "ppc64el"
-            platform: "mac"
+          - architecture: 'armhf'
+            platform: 'mac'
+          - architecture: 'ppc64el'
+            platform: 'mac'
     
     env:
       arch: ${{matrix.architecture}}
       BUILD_NUMBER: ${{github.run_number}}
-      IMAGE_REPO: blakep7/anax-test-repo #Change to secret?
+      IMAGE_REPO: blakep7 #Change to secret?
       ANAX_IMAGE_VERSION: ''      # Updated by "Config version variables step"
       CSS_IMAGE_VERSION: ''
       ESS_IMAGE_VERSION: ''
