@@ -49,26 +49,24 @@ jobs:
         uses: actions/checkout@v2
         with:
             path: go/src/github.com/${{github.repository}}
-      
-      - name: Test repo
-        run: echo $GITHUB_WORKSPACE
 
-      # prepare the environment
+      # Prepare the environment
       - name: Set up golang 1.19.2
         uses: actions/setup-go@v2
         with:
             go-version: '1.19.2'
 
-      # configure version env variables
+      # Configure version variables and store in env. variables
       - name: Config Version Variables
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
       
-      - name: Build Anax Binaries and #SOMETHING?
+      # Increment version, make translation catalogs, build anax binaries
+      - name: Build Anax Binaries
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make temp-mod-version       #Inc. Version?
           make i18n-catalog           #Traslations Catalog?
-          make                        #Build Anax Binary
+          make verbose=y                       #Build Anax Binary
 
       # - name: Make Debian Packages
       #   if: matrix.platform != 'mac'
