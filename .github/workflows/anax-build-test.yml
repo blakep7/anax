@@ -60,15 +60,15 @@ jobs:
       - name: Config Version Variables
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/configure_versions_script.sh
       
-      # Increment version, make translation catalogs, build anax binaries
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
           if [[ "$os" == "mac" ]]; then export opsys="Darwin"; fi
-          make temp-mod-version       #Inc. Version?
-          make i18n-catalog           #Traslations Catalog?
-          make                        #Build Anax Binary
+          make temp-mod-version
+          make i18n-catalog
+          make
 
       # - name: Make Debian Packages
       #   if: matrix.platform != 'mac'
