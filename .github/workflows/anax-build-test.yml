@@ -68,7 +68,7 @@ jobs:
           if [[ "$os" == "mac" ]]; then export opsys="Darwin"; fi
           make temp-mod-version       #Inc. Version?
           make i18n-catalog           #Traslations Catalog?
-          make verbose=y              #Build Anax Binary
+          make                        #Build Anax Binary
 
       # - name: Make Debian Packages
       #   if: matrix.platform != 'mac'
