@@ -6,7 +6,7 @@
 
 # IMAGE_OVERRIDE tells Anax Makefile not to push images, we'll handle it here
 export IMAGE_OVERRIDE="true"
-if ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64'; then
+if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' ]]; then
     make fss-package
 fi
 if ${arch} == 'amd64'; then
