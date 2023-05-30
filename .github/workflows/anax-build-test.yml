@@ -27,7 +27,7 @@ jobs:
     
     env:
       arch: ${{matrix.architecture}}
-      opsys: ${{matrix.platform}} #Needs to be "Linux" or "Darwin" (Darwin is macOS)
+      os: ${{matrix.platform}}
       BUILD_NUMBER: ${{github.run_number}}
       IMAGE_REPO: blakep7 #Change to secret?
       ANAX_IMAGE_VERSION: ''      # Updated by "Config version variables step"
@@ -64,9 +64,11 @@ jobs:
       - name: Build Anax Binaries
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
+          if [[ "$os" == "mac" ]]; then export opsys="Darwin"; fi
           make temp-mod-version       #Inc. Version?
           make i18n-catalog           #Traslations Catalog?
-          make verbose=y                       #Build Anax Binary
+          make verbose=y              #Build Anax Binary
 
       # - name: Make Debian Packages
       #   if: matrix.platform != 'mac'
