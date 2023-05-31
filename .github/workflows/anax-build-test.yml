@@ -39,7 +39,7 @@ jobs:
     steps:
 
       # Upgrade Dockerhub version, needed for building images.
-      - name: Install Latest Docker
+      - name: Install Latest Docker Version
         run: |
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
           sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
@@ -82,23 +82,20 @@ jobs:
           make i18n-catalog
           make
 
-      # - name: Make Debian Packages
-      #   if: matrix.platform != 'mac'
-      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make debpkgs
-      #   env:
-      #     VERSION: ${{env.ANAX_IMAGE_VERSION}}
+      - name: Make Debian Packages
+        if: matrix.platform != 'mac'
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make debpkgs
+        env:
+          VERSION: ${{env.ANAX_IMAGE_VERSION}}
       
-      # - name: Deploy Debian Packages to Dockerhub
-      #   #(need to build dckr with a tar filled with debs files)
-      
-      # - name: Make RPM Packages
-      #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
-      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
-      #   env:
-      #     VERSION: ${{env.ANAX_IMAGE_VERSION}}
+      - name: Make RPM Packages
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
+        env:
+          VERSION: ${{env.ANAX_IMAGE_VERSION}}
 
-      # - name: Deploy RPM Packages to Dockerhub
-      #   #(need to build dckr with tar filled with rpm files)
+      - name: Push Packages to Dockerhub
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/package_push.sh
 
       # - name: Make Mac Packages
       #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'arm64') && matrix.platform == 'mac'
