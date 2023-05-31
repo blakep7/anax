@@ -43,6 +43,9 @@ jobs:
         with:
           username: ${{secrets.DOCKER_USER}}
           password: ${{secrets.DOCKER_TKN}}
+
+      - name: Get Docker Version
+          run: docker --version
       
       # Checkout our Github Repo
       - name: Checkout Github Repo
@@ -55,6 +58,9 @@ jobs:
         uses: actions/setup-go@v2
         with:
             go-version: '1.19.2'
+
+      - name: Get Docker Version
+            run: docker --version
 
       # Configure version variables and store in env. variables
       - name: Config Version Variables
@@ -96,6 +102,9 @@ jobs:
 
       # - name: Deploy Mac Packages to Dockerhub
       #   #(need to build dckr with tar filled with rpm files)
+
+      - name: Get Docker Version
+        run: docker --version
 
       # configure version env variables
       - name: Build Docker Images
