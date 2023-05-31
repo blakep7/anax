@@ -25,5 +25,4 @@ make auto-upgrade-cronjob-k8s-package   # Makes and pushes arch_auto-upgrade-cro
 
 echo "**************"
 docker images
-echo "**************"
-                            
+echo "**************" 
