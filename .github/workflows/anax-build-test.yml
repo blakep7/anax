@@ -45,7 +45,7 @@ jobs:
           password: ${{secrets.DOCKER_TKN}}
 
       - name: Get Docker Version
-          run: docker --version
+        run: docker --version
       
       # Checkout our Github Repo
       - name: Checkout Github Repo
