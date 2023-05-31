@@ -60,7 +60,7 @@ jobs:
             go-version: '1.19.2'
 
       - name: Get Docker Version
-            run: docker --version
+        run: docker --version
 
       # Configure version variables and store in env. variables
       - name: Config Version Variables
