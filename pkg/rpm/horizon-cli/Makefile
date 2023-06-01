@@ -82,5 +82,6 @@ rpmbuild: require-version
 	gzip < $(target_rpm) > $(target_rpm).gz
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
 	ls -la
+	echo "******"
 	ls -la ../../..
 .PHONY: rpmbuild
