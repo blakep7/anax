@@ -10,8 +10,11 @@ echo "ADD ./debs.tar.gz ." >> Dockerfile.debs.tarball
 tar -czvf debs.tar.gz ./pkg/deb/debs/*.deb
 
 # Build docker image with only debs tarball
-docker build --no-cache -t ${IMAGE_REPO}/${arch}_anax_debian:testing -f Dockerfile.debs.tarball .
-docker images
+docker build \
+    --no-cache \
+    -t ${IMAGE_REPO}/${arch}_anax_debian:testing \
+    -f Dockerfile.debs.tarball \
+    .
 
 # Push docker image
 docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
@@ -31,10 +34,13 @@ tar -czvf rpm.tar.gz ../rpmbuild/RPMS/x86_64/*.rpm ..rpmbuild/RPMS/ppc64le/*.rpm
 
 docker build \
     --no-cache \
-    -t $IMAGE_REPO/${arch}_anax_rpm:$ANAX_IMAGE_VERSION \
+    -t $IMAGE_REPO/${arch}_anax_rpm:testing \
     -f Dockerfile.rpm.tarball \
     .
 
-docker push ${arch}_anax_rpm:$ANAX_IMAGE_VERSION
+docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
+
+docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
+docker push ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
 fi
