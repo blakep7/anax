@@ -24,6 +24,11 @@ jobs:
             platform: 'mac'
           - architecture: 'ppc64el'
             platform: 'mac'
+
+          - architecture: 'amd64'
+            platform: 'mac'
+          - architecture: 'arm64'
+            platform: 'mac'
     
     env:
       arch: ${{matrix.architecture}}
@@ -89,11 +94,11 @@ jobs:
         env:
           VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
       
-      - name: Make RPM Packages
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
-        env:
-          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
+      # - name: Make RPM Packages
+      #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
+      #   run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
+      #   env:
+      #     VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
 
       - name: Push Packages to Dockerhub
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/package_push.sh
