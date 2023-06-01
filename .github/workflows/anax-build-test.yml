@@ -33,6 +33,7 @@ jobs:
       ANAX_IMAGE_VERSION: ''      # Updated by "Config version variables step"
       CSS_IMAGE_VERSION: ''
       ESS_IMAGE_VERSION: ''
+      VERSION_NO_BUILD_NUMBER: ''
       GOPATH: /home/runner/work/anax/anax/go
 
 
@@ -92,7 +93,7 @@ jobs:
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
         env:
-          VERSION: ${{env.ANAX_IMAGE_VERSION}}
+          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
 
       - name: Push Packages to Dockerhub
         run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && ./.github/scripts/package_push.sh
