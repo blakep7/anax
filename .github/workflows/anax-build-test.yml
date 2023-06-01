@@ -85,7 +85,7 @@ jobs:
           if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
           if [[ "$os" == "mac" ]]; then export opsys="Darwin"; fi
           make temp-mod-version
-          make i18n-catalog
+          #make i18n-catalog
           make
 
       - name: Make Debian Packages
