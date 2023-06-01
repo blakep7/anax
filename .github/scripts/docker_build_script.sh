@@ -1,6 +1,3 @@
-# IMAGE_OVERRIDE tells Anax Makefile not to push images, we'll handle it here
-export IMAGE_OVERRIDE="true"
-
 # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
 if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' ]]; then
     make fss-package
