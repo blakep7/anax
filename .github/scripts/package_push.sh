@@ -30,7 +30,15 @@ touch Dockerfile.rpm.tarball
 echo "FROM scratch" >> Dockerfile.rpm.tarball
 echo "ADD ./rpm.tar.gz ." >> Dockerfile.rpm.tarball
 
-tar -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/x86_64/*.rpm /home/runner/rpmbuild/RPMS/ppc64le/*.rpm        #These dont exist, find where RPM builds to
+if [[ ${arch} == 'amd64' ]]; then
+rpm_build_folder="x86_64"
+fi
+if [[ ${arch} == 'ppc64el' ]]; then
+rpm_build_folder="ppc64le"
+fi
+
+
+tar -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/${rpm_build_folder}/*.rpm
 
 docker build \
     --no-cache \
