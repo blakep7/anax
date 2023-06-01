@@ -42,7 +42,6 @@ endif
 # Remember to up VERSION above. If building the rpm on mac, first: brew install rpm
 # Note: during rpmbuild on mac, you may get this benign msg: error: Couldn't exec /usr/local/Cellar/rpm/4.14.1_1/lib/rpm/elfdeps: No such file or directory
 rpmbuild: require-version
-	pwd
 	opsys=Linux arch=$(arch) $(MAKE) -C ../../.. cli/hzn
 	mkdir -p fs/usr/horizon/bin fs/usr/horizon/cluster fs/etc/bash_completion.d fs/usr/share/man/man1
 	@# If you add files copied, add them to .gitignore too
@@ -81,7 +80,4 @@ rpmbuild: require-version
 	@# See https://unix.stackexchange.com/a/58814
 	gzip < $(target_rpm) > $(target_rpm).gz
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
-	ls -la
-	echo "******"
-	ls -la ../../..
 .PHONY: rpmbuild

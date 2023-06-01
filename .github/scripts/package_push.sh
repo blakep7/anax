@@ -30,7 +30,7 @@ touch Dockerfile.rpm.tarball
 echo "FROM scratch" >> Dockerfile.rpm.tarball
 echo "ADD ./rpm.tar.gz ." >> Dockerfile.rpm.tarball
 
-tar -czvf rpm.tar.gz ../rpmbuild/RPMS/x86_64/*.rpm ..rpmbuild/RPMS/ppc64le/*.rpm
+tar -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/x86_64/*.rpm /home/runner/rpmbuild/RPMS/ppc64le/*.rpm        #These dont exist, find where RPM builds to
 
 docker build \
     --no-cache \
@@ -38,7 +38,7 @@ docker build \
     -f Dockerfile.rpm.tarball \
     .
 
-docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
+docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
 docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
 docker push ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
