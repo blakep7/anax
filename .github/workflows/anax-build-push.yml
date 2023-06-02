@@ -1,0 +1,110 @@
+# Name of the workflow
+name: anax-build-push
+
+# Workflow triggers -- When a push (including merge) is made to the listed branches
+on:
+  push:
+    branches:
+      - master
+      - v2.30
+      - v2.29
+
+# Jobs executed when workflow is triggered
+jobs:
+  # Job 1/1: Builds all linux versions of anax and pushes to dockerhub
+  build:
+    # The type of runner that the job will run on 
+    runs-on: ubuntu-20.04
+
+    # Strategy allows specifying matrix axis(es) that will run for the test
+    strategy:
+      matrix:
+        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
+        platform: ['linux']
+
+    # Variables that are available to all steps in the job
+    env:
+      arch: ${{matrix.architecture}}
+      os: ${{matrix.platform}}
+      BUILD_NUMBER: ${{github.run_number}}    # From Github actions run number
+      IMAGE_REPO: blakep7                     # Dockerhub repo name
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      GOPATH: /home/runner/work/anax/anax/go
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Upgrade Dockerhub version, needed for building images.
+      - name: Install Latest Docker Version
+        run: |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce
+
+      # Authenticate Dockerhub to allow pushing to our image repo
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{secrets.DOCKER_USER}}
+          password: ${{secrets.DOCKER_TKN}}
+
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v2
+        with:
+          path: go/src/github.com/${{github.repository}}
+
+      # Prepare the environment
+      - name: Set up golang 1.19.2
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19.2'
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/configure_versions_script.sh
+      
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+      - name: Build Anax Binaries
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
+          make temp-mod-version
+          make i18n-catalog
+          make
+      
+      # Make our Debian packages
+      - name: Make Debian Packages
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make debpkgs
+        env:
+          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
+      
+      # Make our RPM packages
+      - name: Make RPM Packages
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el')
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          if [[ ${arch} == "ppc64el" ]]; then sed -i "/hzn_bash_autocomplete\.sh/d" ./pkg/rpm/horizon-cli/horizon-cli.spec; fi
+          make rpmpkgs
+        env:
+          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
+
+      # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
+      - name: Push Packages to Dockerhub
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/package_push.sh
+
+      # Build Docker images and push them to Dockerhub
+      - name: Build Docker Images
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/docker_build_script.sh
