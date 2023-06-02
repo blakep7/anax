@@ -8,6 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
+  workflow_dispatch:
 
 # Jobs executed when workflow is triggered
 jobs:
