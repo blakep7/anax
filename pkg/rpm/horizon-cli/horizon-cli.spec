@@ -47,9 +47,7 @@ cp -a fs/* $RPM_BUILD_ROOT/
 #%defattr(-, root, root)
 /usr/horizon
 /etc/horizon
-%if %{__wildcard} %{_includedir}/hzn_bash_autocomplete.sh
 /etc/bash_completion.d/hzn_bash_autocomplete.sh
-%endif
 /usr/share/man
 
 %post

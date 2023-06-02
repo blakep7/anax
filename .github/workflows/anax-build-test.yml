@@ -96,7 +96,10 @@ jobs:
       
       - name: Make RPM Packages
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el') && matrix.platform != 'mac'
-        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make rpmpkgs
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          if [[ ${arch} == "ppc64el" ]]; then sed -i "" "/hzn_bash_autocomplete\.sh/d" ./pkg/rpm/horizon-cli/horizon-cli.spec; fi
+          make rpmpkgs
         env:
           VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
 
