@@ -20,7 +20,7 @@ jobs:
       matrix:
         tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
 
-    # Variables that are available to all steps in the job.
+    # Variables that are available to all steps in the job
     env:
       GOPATH: /home/runner/work/anax/anax/go
 
