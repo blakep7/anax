@@ -1,0 +1,51 @@
+# Name of the workflow
+name: anax-E2E-test
+
+# Workflow triggers -- When a pull request is made for the listed branches
+on:
+  pull_request:
+    branches:
+      - master
+      - v2.30
+      - v2.29
+  workflow_dispatch:
+
+# Jobs executed when workflow is triggered
+jobs:
+  test:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-20.04
+
+    # Strategy allows specifying matrix axis(es) that will run for the test
+    strategy:
+      matrix:
+        tests: ["NOLOOP=1", "NOLOOP=1 TEST_PATTERNS=sall"]
+
+    # Variables that are available to all steps in the job
+    env:
+      GOPATH: /home/runner/work/anax/anax/go
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          path: go/src/github.com/${{github.repository}}
+    
+      # Prepares the environment by setting up golang
+      - name: Set up golang 1.19.2
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.19.2'
+
+      # Build anax binaries
+      - name: Build anax binaries
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make
+          
+      # Build the e2edev docker images 
+      - name: Build the e2edev docker images
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test build-remote
+
+      # E2E development test
+      - name: E2E dev-test
+        run: cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY} && make -C test clean && make -C test test TEST_VARS=${{matrix.tests}}

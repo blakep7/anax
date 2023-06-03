@@ -3,9 +3,9 @@
 # Get current versions
 ORIG_ANAX_IMAGE_VERSION=$(sed -n 's/export VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g')
 ORIG_CSS_IMAGE_VERSION=$(sed -n 's/CSS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g')
-ORIG_ESS_IMAGE_VERSION=$(sed -n 's/ESS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g') #escape delim '\$' not working? term problem? 
+ORIG_ESS_IMAGE_VERSION=$(sed -n 's/ESS_IMAGE_VERSION ?= //p' Makefile | cut -d '$' -f 1 | sed 's/ *$//g')
 
-# Get build numbers
+# Append our build numbers from the workflow env. variables
 ANAX_IMAGE_VERSION="${ORIG_ANAX_IMAGE_VERSION}-${BUILD_NUMBER}"
 CSS_IMAGE_VERSION="${ORIG_CSS_IMAGE_VERSION}-${BUILD_NUMBER}"
 ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${BUILD_NUMBER}"
@@ -17,11 +17,12 @@ ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${BUILD_NUMBER}"
 # CSS_IMAGE_VERSION="${ORIG_CSS_IMAGE_VERSION}-${UNIQUE_VERSION_HASH}"
 # ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${UNIQUE_VERSION_HASH}"
 
+# Output configured versions for viewing
 echo "***Anax Version: ${ANAX_IMAGE_VERSION}"
 echo "***CSS Version: ${CSS_IMAGE_VERSION}"
 echo "***ESS Version: ${ESS_IMAGE_VERSION}"
 
-# Put script variables into job env variables
+# Put script variables into workflow env. variables
 echo "VERSION_NO_BUILD_NUMBER=$ORIG_ANAX_IMAGE_VERSION" >> $GITHUB_ENV
 echo "ANAX_IMAGE_VERSION=$ANAX_IMAGE_VERSION" >> $GITHUB_ENV
 echo "CSS_IMAGE_VERSION=$CSS_IMAGE_VERSION" >> $GITHUB_ENV
