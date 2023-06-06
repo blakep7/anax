@@ -8,7 +8,7 @@ echo "FROM alpine:latest" >> Dockerfile.debs.tarball
 echo "ADD ./debs.tar.gz ." >> Dockerfile.debs.tarball
 
 # Make debs tarball
-tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf debs.tar.gz ./pkg/deb/debs/*.deb
+tar --transform 's/.*\///; s/^/DEB\//' -czvf debs.tar.gz ./pkg/deb/debs/*.deb
 
 # Build docker image with only debs tarball
 docker build \
@@ -40,7 +40,7 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
     fi
 
     # Make RPM tarball
-    tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/${rpm_build_folder}/*.rpm
+    tar --transform 's/.*\///; s/^/RPM\//' -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/${rpm_build_folder}/*.rpm
 
     # Build docker image with only RPM tarball
     docker build \
