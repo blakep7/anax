@@ -20,7 +20,10 @@ docker build \
 # Tag and push docker image
 docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
 
-docker push ${IMAGE_REPO}/${arch}_anax_debian:testing
+if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
+    docker push ${IMAGE_REPO}/${arch}_anax_debian:testing
+fi
+
 docker push ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
 
 # Deal with RPM Package
@@ -52,7 +55,10 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
     # Tag and push docker image
     docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
-    docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
+    if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
+        docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
+    fi
+
     docker push ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
 fi
