@@ -3,6 +3,7 @@
 # Deal with Debian Packaging First
 
 # Make the temp Dockerfile for the debs only tarball image
+## Chose alpine:latest b/c of small size, tried FROM scratch but couldn't run container
 touch Dockerfile.debs.tarball
 echo "FROM alpine:latest" >> Dockerfile.debs.tarball
 echo "ADD ./debs.tar.gz ." >> Dockerfile.debs.tarball
@@ -43,7 +44,7 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
     fi
 
     # Make RPM tarball
-    tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf rpm.tar.gz /home/runner/rpmbuild/RPMS/${rpm_build_folder}/*.rpm
+    tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf rpm.tar.gz /home/runner/work/anax/anax/RPMS/*.rpm
 
     # Build docker image with only RPM tarball
     docker build \
