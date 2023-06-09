@@ -52,6 +52,8 @@ jobs:
       # Need for multi-arch build for docker
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          driver: docker
 
       # Authenticate Dockerhub to allow pushing to our image repo
       - name: Login to Dockerhub
