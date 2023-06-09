@@ -9,10 +9,10 @@ if [[ ${arch} == 'amd64' ]]; then
 fi
 
 # What does this do?
-if [[ ${arch} == 'arm64' ]]; then
+if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el']]; then
     export USE_DOCKER_BUILDX=true
-    # setup the QEMU simulator. You can then run `docker buildx ls` to see which platforms are available.
-    docker run --rm --privileged $IMAGE_REPO/multiarch/qemu-user-static:latest --reset -p yes
+    # # setup the QEMU simulator. You can then run `docker buildx ls` to see which platforms are available.
+    # docker run --rm --privileged $IMAGE_REPO/multiarch/qemu-user-static:latest --reset -p yes
 fi
 
 
