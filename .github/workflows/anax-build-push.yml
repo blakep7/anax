@@ -81,10 +81,11 @@ jobs:
           ./.github/scripts/configure_versions_script.sh
 
       # Deal with setting BRANCH_NAME if we run this workflow with branches other than master
-      - id: config_branch_name
+      - name: Configure BRANCH_NAME Environment Variable
+        id: config_branch_name
         run: |
           if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-          echo "BRANCH_NAME="" >> $GITHUB_OUTPUT; \
+          echo "BRANCH_NAME=""" >> $GITHUB_OUTPUT; \
           else \
           echo "BRANCH_NAME="${GITHUB_REF#refs/heads/}"" >> $GITHUB_OUTPUT; \
           fi
