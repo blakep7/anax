@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# Deal with Debian Packaging First
+# Deal with Debian Package First
 
 # Make the temp Dockerfile for the debs only tarball image
 ## Chose alpine:latest b/c of small size, tried FROM scratch but couldn't run container
@@ -14,17 +12,14 @@ tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf debs.tar.gz ./pkg/deb/debs
 # Build docker image with only debs tarball
 docker build \
     --no-cache \
-    -t ${IMAGE_REPO}/${arch}_anax_debian:testing \
+    -t ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME} \
     -f Dockerfile.debs.tarball \
     .
 
 # Tag and push docker image
-docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
+docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME} ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
 
-if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
-    docker push ${IMAGE_REPO}/${arch}_anax_debian:testing
-fi
-
+docker push ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME}
 docker push ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
 
 # Deal with RPM Package
@@ -49,17 +44,14 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
     # Build docker image with only RPM tarball
     docker build \
         --no-cache \
-        -t $IMAGE_REPO/${arch}_anax_rpm:testing \
+        -t $IMAGE_REPO/${arch}_anax_rpm:testing${BRANCH_NAME} \
         -f Dockerfile.rpm.tarball \
         .
 
     # Tag and push docker image
-    docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
+    docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing${BRANCH_NAME} ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
-    if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
-        docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
-    fi
-
+    docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing${BRANCH_NAME}
     docker push ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
 fi

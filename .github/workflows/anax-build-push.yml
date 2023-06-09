@@ -45,15 +45,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install docker-ce
 
-      # Need for multi-arch build for docker
+      # This is needed for our cross architecture docker image builds
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
-      # Need for multi-arch build for docker
+      # Buildx allows us to perform our cross architecture docker image builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
-          driver: docker
+          driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
 
       # Authenticate Dockerhub to allow pushing to our image repo
       - name: Login to Dockerhub
@@ -79,6 +79,15 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/configure_versions_script.sh
+
+      # Deal with setting BRANCH_NAME if we run this workflow with branches other than master
+      - id: config_branch_name
+        run: |
+          if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
+          echo "BRANCH_NAME="" >> $GITHUB_OUTPUT; \
+          else \
+          echo "BRANCH_NAME="${GITHUB_REF#refs/heads/}"" >> $GITHUB_OUTPUT; \
+          fi
       
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
@@ -86,7 +95,7 @@ jobs:
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
           make temp-mod-version
-          #make i18n-catalog
+          make i18n-catalog
           make
       
       # Make our Debian packages
@@ -97,7 +106,7 @@ jobs:
         env:
           VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
       
-      # Make our amd64 RPM packages (Github runners will always have amd64 architecture)
+      # Make our amd64 RPM packages (Default Github runners will always have amd64 architecture)
       - name: Make amd64 RPM Packages
         if: matrix.architecture == 'amd64'
         run: |
@@ -112,6 +121,7 @@ jobs:
         if: matrix.architecture == 'ppc64el'
         uses: uraimo/run-on-arch-action@v2
         with:
+          # Specify container arch and distro
           arch: ppc64le
           distro: ubuntu20.04
 
@@ -141,24 +151,26 @@ jobs:
             wget https://go.dev/dl/go1.19.2.linux-ppc64le.tar.gz 
             sudo tar -C /usr/local -xf go1.19.2.linux-ppc64le.tar.gz
             export GOPATH=/usr/local/go
-            export PATH=$PATH:/usr/local/go/bin 
-            go version
+            export PATH=$PATH:/usr/local/go/bin
             cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
             cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
             make rpmpkgs
             mkdir /home/runner/work/anax/anax/RPMS
             cp /root/rpmbuild/RPMS/ppc64le/*.rpm /home/runner/work/anax/anax/RPMS
             
-
       # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
-      - name: Push Packages to Dockerhub
+      - name: Push RPM/DEB Packages to Dockerhub
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/package_push.sh
+        env:
+          BRANCH_NAME: ${{ steps.config_branch_name.outputs.BRANCH_NAME }}
 
       # Build Docker images and push them to Dockerhub
-      - name: Build Docker Images
+      - name: Build and Push Docker Images
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_build_script.sh
+        env:
+          BRANCH_NAME: ${{ steps.config_branch_name.outputs.BRANCH_NAME }}

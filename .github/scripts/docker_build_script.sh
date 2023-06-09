@@ -3,18 +3,15 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' ]]; then
     make fss-package
 fi
 
-# Makes and pushes agbot images
+# Makes and pushes amd64_agbot image
 if [[ ${arch} == 'amd64' ]]; then
     make agbot-package
 fi
 
-# What does this do?
+# Specify if we should use buildx for multiarch, github runner is amd64 so we only need this for arm and ppc
 if [[ ${arch} == 'arm64' || ${arch} == 'ppc64el' ]]; then
     export USE_DOCKER_BUILDX=true
-    # # setup the QEMU simulator. You can then run `docker buildx ls` to see which platforms are available.
-    # docker run --rm --privileged $IMAGE_REPO/multiarch/qemu-user-static:latest --reset -p yes
 fi
-
 
 make anax-package                       # Makes and pushes arch_anax
 make anax-k8s-package                   # Makes and pushes arch_anax_k8s
