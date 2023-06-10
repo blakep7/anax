@@ -36,7 +36,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Upgrade Docker engine version, needed for building images.
+      # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
         run: |
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
