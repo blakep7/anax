@@ -1,5 +1,5 @@
 # Name of the workflow
-name: anax-build-push
+name: build-push
 
 # Workflow triggers -- When a push (including merge) is made to the listed branches
 on:
