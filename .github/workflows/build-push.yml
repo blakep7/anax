@@ -80,6 +80,7 @@ jobs:
         id: get_go
         run: |
           echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+          printenv
 
       # Configure version variables for later steps, stored in our workflow env. variables
       - name: Config Version Variables
