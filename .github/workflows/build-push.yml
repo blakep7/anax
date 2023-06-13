@@ -74,8 +74,12 @@ jobs:
         with:
           go-version: '1.19'
           check-latest: true
-        
-      - run: go version
+
+      # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
+      - name: Check Go Version
+        id: get_go
+        run: |
+          echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
 
       # Configure version variables for later steps, stored in our workflow env. variables
       - name: Config Version Variables
@@ -134,11 +138,13 @@ jobs:
             VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
             BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
             GITHUB_REPOSITORY: ${{ github.repository }}
+            GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
 
           # Specify which shell our commands will use (ubuntu distro so use bash)
           shell : /bin/bash
 
           # Install the necessary dependencies needed to make the rpm packages
+          # apt-get install golang, will get version 1.13 so we have to do it manually
           install: |
             apt-get update -q -y
             apt-get install -q -y build-essential
@@ -152,8 +158,8 @@ jobs:
           # Commands that will be ran inside our docker container
           run: |
             cd /
-            wget https://go.dev/dl/go1.19.2.linux-ppc64le.tar.gz 
-            sudo tar -C /usr/local -xf go1.19.2.linux-ppc64le.tar.gz
+            wget https://go.dev/dl/${GO_VERSION}.linux-ppc64le.tar.gz 
+            sudo tar -C /usr/local -xf ${GO_VERSION}.linux-ppc64le.tar.gz
             export GOPATH=/usr/local/go
             export PATH=$PATH:/usr/local/go/bin
             cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
