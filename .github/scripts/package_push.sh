@@ -12,15 +12,17 @@ tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf debs.tar.gz ./pkg/deb/debs
 # Build docker image with only debs tarball
 docker build \
     --no-cache \
-    -t ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME} \
+    -t ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION} \
     -f Dockerfile.debs.tarball \
     .
 
-# Tag and push docker image
-docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME} ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
-
-docker push ${IMAGE_REPO}/${arch}_anax_debian:testing${BRANCH_NAME}
+# Push docker image
 docker push ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION}
+
+if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
+    docker tag ${IMAGE_REPO}/${arch}_anax_debian:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_debian:testing
+    docker push ${IMAGE_REPO}/${arch}_anax_debian:testing
+fi
 
 # Deal with RPM Package
 if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
@@ -44,14 +46,15 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
     # Build docker image with only RPM tarball
     docker build \
         --no-cache \
-        -t $IMAGE_REPO/${arch}_anax_rpm:testing${BRANCH_NAME} \
+        -t $IMAGE_REPO/${arch}_anax_rpm:${ANAX_IMAGE_VERSION} \
         -f Dockerfile.rpm.tarball \
         .
 
-    # Tag and push docker image
-    docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing${BRANCH_NAME} ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
-
-    docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing${BRANCH_NAME}
+    # Push docker image
     docker push ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION}
 
+    if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
+        docker tag ${IMAGE_REPO}/${arch}_anax_rpm:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_rpm:testing
+        docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing
+    fi
 fi

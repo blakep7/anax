@@ -25,9 +25,9 @@ jobs:
 
     # Variables that are available to all steps in the job
     env:
-      arch: ${{matrix.architecture}}
-      os: ${{matrix.platform}}
-      BUILD_NUMBER: ${{github.run_number}}    # From Github actions run number
+      arch: ${{ matrix.architecture }}
+      os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ github.run_number }}    # From Github actions run number
       IMAGE_REPO: blakep7                     # Dockerhub repo name
       ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
       CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
@@ -59,14 +59,14 @@ jobs:
       - name: Login to Dockerhub
         uses: docker/login-action@v2
         with:
-          username: ${{secrets.DOCKER_USER}}
-          password: ${{secrets.DOCKER_TKN}}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TKN }}
 
       # Checkout our Github repo
       - name: Checkout Github Repo
         uses: actions/checkout@v2
         with:
-          path: go/src/github.com/${{github.repository}}
+          path: go/src/github.com/${{ github.repository }}
 
       # Prepare the environment
       - name: Set up golang 1.19
@@ -80,23 +80,12 @@ jobs:
         id: get_go
         run: |
           echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
-          printenv
 
       # Configure version variables for later steps, stored in our workflow env. variables
       - name: Config Version Variables
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/configure_versions_script.sh
-
-      # Deal with setting BRANCH_NAME if we run this workflow with branches other than master
-      - name: Configure BRANCH_NAME Environment Variable
-        id: config_branch_name
-        run: |
-          if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-          echo "BRANCH_NAME=""" >> $GITHUB_OUTPUT; \
-          else \
-          echo "BRANCH_NAME="${GITHUB_REF#refs/heads/}"" >> $GITHUB_OUTPUT; \
-          fi
       
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
@@ -174,14 +163,15 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/package_push.sh
-        env:
-          BRANCH_NAME: ${{ steps.config_branch_name.outputs.BRANCH_NAME }}
 
-      # Build Docker images and push them to Dockerhub
-      - name: Build and Push Docker Images
+      # Build Docker images
+      - name: Build Docker Images
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_build_script.sh
-        env:
-          BRANCH_NAME: ${{ steps.config_branch_name.outputs.BRANCH_NAME }}
+
+      # # Push Docker Images to Dockerhub
+      # - name: Push Docker Images
+      #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+      #   run: |
