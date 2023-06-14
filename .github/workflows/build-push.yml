@@ -203,8 +203,6 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           brew install docker
-          echo 'export PATH="/usr/local/opt/openssl@3/bin:$PATH"' >> /Users/runner/.bash_profile
-          openssl version
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
@@ -245,20 +243,30 @@ jobs:
       - name: Configure Certs
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          touch horizon-cli.key
-          touch horizon-cli.crt
-          echo "$KEY" >> horizon-cli.key
-          echo "$CRT" >> horizon-cli.crt
-          openssl pkcs12 -export -inkey ./horizon-cli.key -in ./horizon-cli.crt -out ./horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
-          sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
-          # sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
-          # sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" pub.crt
-          rm ./horizon-cli.key
-          rm ./horizon-cli.crt
+
+          echo $CERT | base64 —decode > certificate.p12
+          security create-keychain -p testing build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p testing build.keychain
+          security import certificate.p12 -k build.keychain -P $PASS -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,pkgbuild: -s -k testing build.keychain
+
+          # touch horizon-cli.key
+          # touch horizon-cli.crt
+          # echo "$KEY" >> horizon-cli.key
+          # echo "$CRT" >> horizon-cli.crt
+          # openssl pkcs12 -export -inkey ./horizon-cli.key -in ./horizon-cli.crt -out ./horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
+          # sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
+          # # sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
+          # # sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" pub.crt
+          # rm ./horizon-cli.key
+          # rm ./horizon-cli.crt
         env:
           HORIZON_CLI_PRIV_KEY_PW: 'testing'
           KEY: ${{ secrets.HORIZONCLI_KEY }}
           CRT: ${{ secrets.HORIZONCLI_CRT }}
+          CERT: ${{ secrets.CERT }}
+          PASS: ${{ secrets.PASS }}
 
       - run: |
           sudo security find-identity -v
