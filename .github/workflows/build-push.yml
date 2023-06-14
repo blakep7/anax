@@ -205,15 +205,15 @@ jobs:
         run: |
           brew install docker
 
-      # This is needed for our cross architecture docker image builds
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+      # # This is needed for our cross architecture docker image builds
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
 
-      # Buildx allows us to perform our cross architecture docker image builds
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+      # # Buildx allows us to perform our cross architecture docker image builds
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+      #   with:
+      #     driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
 
       # Authenticate Dockerhub to allow pushing to our image repo
       - name: Login to Dockerhub
