@@ -249,8 +249,8 @@ jobs:
           echo "$CRT" >> horizon-cli.crt
           openssl pkcs12 -export -inkey ./horizon-cli.key -in ./horizon-cli.crt -out ./horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
           sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
-          sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
-          sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" pub.crt
+          # sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
+          # sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" pub.crt
           rm ./horizon-cli.key
           rm ./horizon-cli.crt
         env:
