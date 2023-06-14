@@ -271,3 +271,8 @@ jobs:
           make macpkg
         env:
           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+
+      - run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          cd ./pkg/mac/build
+          ls -la
