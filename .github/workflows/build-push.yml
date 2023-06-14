@@ -17,168 +17,168 @@ env:
 # Jobs executed when workflow is triggered
 jobs:
   # Builds debian packages, RPM packages, and Docker images. Then pushes to Dockerhub.
-  build-linux:
-    # The type of runner that the job will run on 
-    runs-on: ubuntu-20.04
+  # build-linux:
+  #   # The type of runner that the job will run on 
+  #   runs-on: ubuntu-20.04
 
-    # Strategy allows specifying matrix axis(es) that will run for the test
-    strategy:
-      matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
-        platform: ['linux']
+  #   # Strategy allows specifying matrix axis(es) that will run for the test
+  #   strategy:
+  #     matrix:
+  #       architecture: ['amd64', 'arm64', 'armhf', 'ppc64el']
+  #       platform: ['linux']
 
-    # Variables that are available to all steps in the job
-    env:
-      arch: ${{ matrix.architecture }}
-      os: ${{ matrix.platform }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
-      GOPATH: /home/runner/work/anax/anax/go
+  #   # Variables that are available to all steps in the job
+  #   env:
+  #     arch: ${{ matrix.architecture }}
+  #     os: ${{ matrix.platform }}
+  #     ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+  #     CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+  #     ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+  #     VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+  #     GOPATH: /home/runner/work/anax/anax/go
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Upgrade Docker engine version, needed for building images
-      - name: Install Latest Docker Version
-        run: |
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-          sudo apt-get update
-          sudo apt-get install docker-ce
+  #   # Steps represent a sequence of tasks that will be executed as part of the job
+  #   steps:
+  #     # Upgrade Docker engine version, needed for building images
+  #     - name: Install Latest Docker Version
+  #       run: |
+  #         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  #         sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+  #         sudo apt-get update
+  #         sudo apt-get install docker-ce
 
-      # This is needed for our cross architecture docker image builds
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+  #     # This is needed for our cross architecture docker image builds
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v2
 
-      # Buildx allows us to perform our cross architecture docker image builds
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-        with:
-          driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+  #     # Buildx allows us to perform our cross architecture docker image builds
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #       with:
+  #         driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
 
-      # Authenticate Dockerhub to allow pushing to our image repo
-      - name: Login to Dockerhub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TKN }}
+  #     # Authenticate Dockerhub to allow pushing to our image repo
+  #     - name: Login to Dockerhub
+  #       uses: docker/login-action@v2
+  #       with:
+  #         username: ${{ secrets.DOCKER_USER }}
+  #         password: ${{ secrets.DOCKER_TKN }}
 
-      # Checkout our Github repo
-      - name: Checkout Github Repo
-        uses: actions/checkout@v2
-        with:
-          path: go/src/github.com/${{ github.repository }}
+  #     # Checkout our Github repo
+  #     - name: Checkout Github Repo
+  #       uses: actions/checkout@v2
+  #       with:
+  #         path: go/src/github.com/${{ github.repository }}
 
-      # Prepare the environment
-      - name: Set up golang 1.19
-        uses: actions/setup-go@v3
-        with:
-          go-version: '1.19'
-          check-latest: true
+  #     # Prepare the environment
+  #     - name: Set up golang 1.19
+  #       uses: actions/setup-go@v3
+  #       with:
+  #         go-version: '1.19'
+  #         check-latest: true
 
-      # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
-      - name: Check Go Version
-        id: get_go
-        run: |
-          echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
+  #     # The go version will change, so we must get which one we are using for when we build the ppc64el images in the docker env.
+  #     - name: Check Go Version
+  #       id: get_go
+  #       run: |
+  #         echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
 
-      # Configure version variables for later steps, stored in our workflow env. variables
-      - name: Config Version Variables
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/configure_versions_script.sh
+  #     # Configure version variables for later steps, stored in our workflow env. variables
+  #     - name: Config Version Variables
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         ./.github/scripts/configure_versions_script.sh
       
-      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
-      - name: Build Anax Binaries
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
-          make temp-mod-version
-          make i18n-catalog
-          make
+  #     # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+  #     - name: Build Anax Binaries
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
+  #         make temp-mod-version
+  #         make i18n-catalog
+  #         make
       
-      # Make our Debian packages
-      - name: Make Debian Packages
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          make debpkgs
-        env:
-          VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
+  #     # Make our Debian packages
+  #     - name: Make Debian Packages
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         make debpkgs
+  #       env:
+  #         VERSION: ${{env.VERSION_NO_BUILD_NUMBER}}
       
-      # Make our amd64 RPM packages (Default Github runners will always have amd64 architecture)
-      - name: Make amd64 RPM Packages
-        if: matrix.architecture == 'amd64'
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          make rpmpkgs
-        env:
-          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+  #     # Make our amd64 RPM packages (Default Github runners will always have amd64 architecture)
+  #     - name: Make amd64 RPM Packages
+  #       if: matrix.architecture == 'amd64'
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         make rpmpkgs
+  #       env:
+  #         VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
 
-      # Make our ppc64el RPM packages in docker container to specify architecture
-      ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
-      - name: Make ppc64el RPM Packages
-        if: matrix.architecture == 'ppc64el'
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          # Specify container arch and distro
-          arch: ppc64le
-          distro: ubuntu20.04
+  #     # Make our ppc64el RPM packages in docker container to specify architecture
+  #     ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
+  #     - name: Make ppc64el RPM Packages
+  #       if: matrix.architecture == 'ppc64el'
+  #       uses: uraimo/run-on-arch-action@v2
+  #       with:
+  #         # Specify container arch and distro
+  #         arch: ppc64le
+  #         distro: ubuntu20.04
 
-          # Pass necessary env. variables to the new docker container env.
-          env: |
-            VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
-            BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
-            GITHUB_REPOSITORY: ${{ github.repository }}
-            GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
+  #         # Pass necessary env. variables to the new docker container env.
+  #         env: |
+  #           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+  #           BUILD_NUMBER: ${{ env.BUILD_NUMBER }}
+  #           GITHUB_REPOSITORY: ${{ github.repository }}
+  #           GO_VERSION: ${{ steps.get_go.outputs.GO_VERSION }}
 
-          # Specify which shell our commands will use (ubuntu distro so use bash)
-          shell : /bin/bash
+  #         # Specify which shell our commands will use (ubuntu distro so use bash)
+  #         shell : /bin/bash
 
-          # Install the necessary dependencies needed to make the rpm packages
-          # apt-get install golang, will get version 1.13 so we have to do it manually
-          install: |
-            apt-get update -q -y
-            apt-get install -q -y build-essential
-            apt-get install -q -y make
-            apt-get install -q -y rpm
-            apt-get install -q -y ca-certificates
-            apt-get install -q -y wget
-            apt-get install -q -y sudo
-            apt-get install -q -y gettext
+  #         # Install the necessary dependencies needed to make the rpm packages
+  #         # apt-get install golang, will get version 1.13 so we have to do it manually
+  #         install: |
+  #           apt-get update -q -y
+  #           apt-get install -q -y build-essential
+  #           apt-get install -q -y make
+  #           apt-get install -q -y rpm
+  #           apt-get install -q -y ca-certificates
+  #           apt-get install -q -y wget
+  #           apt-get install -q -y sudo
+  #           apt-get install -q -y gettext
           
-          # Commands that will be ran inside our docker container
-          run: |
-            cd /
-            wget https://go.dev/dl/${GO_VERSION}.linux-ppc64le.tar.gz 
-            sudo tar -C /usr/local -xf ${GO_VERSION}.linux-ppc64le.tar.gz
-            export GOPATH=/usr/local/go
-            export PATH=$PATH:/usr/local/go/bin
-            cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
-            cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
-            make rpmpkgs
-            mkdir /home/runner/work/anax/anax/RPMS
-            cp /root/rpmbuild/RPMS/ppc64le/*.rpm /home/runner/work/anax/anax/RPMS
+  #         # Commands that will be ran inside our docker container
+  #         run: |
+  #           cd /
+  #           wget https://go.dev/dl/${GO_VERSION}.linux-ppc64le.tar.gz 
+  #           sudo tar -C /usr/local -xf ${GO_VERSION}.linux-ppc64le.tar.gz
+  #           export GOPATH=/usr/local/go
+  #           export PATH=$PATH:/usr/local/go/bin
+  #           cp -R /home/runner/work/anax/anax/go/src/github.com /usr/local/go/src
+  #           cd /usr/local/go/src/github.com/${GITHUB_REPOSITORY}
+  #           make rpmpkgs
+  #           mkdir /home/runner/work/anax/anax/RPMS
+  #           cp /root/rpmbuild/RPMS/ppc64le/*.rpm /home/runner/work/anax/anax/RPMS
             
-      # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
-      - name: Push RPM/DEB Packages to Dockerhub
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/package_push.sh
+  #     # Create Docker images with only Debs and RPM packages in tar.gz then push to Dockerhub
+  #     - name: Push RPM/DEB Packages to Dockerhub
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         ./.github/scripts/package_push.sh
 
-      # Build Docker Images
-      - name: Build Docker Images
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/docker_build_script.sh
+  #     # Build Docker Images
+  #     - name: Build Docker Images
+  #       if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         ./.github/scripts/docker_build_script.sh
 
-      # Push Docker Images to Dockerhub
-      - name: Push Docker Images
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/docker_push_script.sh
+  #     # Push Docker Images to Dockerhub
+  #     - name: Push Docker Images
+  #       if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+  #       run: |
+  #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+  #         ./.github/scripts/docker_push_script.sh
 
   build-macos:
     # Do not use any 'xl' version of macos or you will pay (literally)
@@ -186,7 +186,7 @@ jobs:
 
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64']
+        architecture: ['amd64']
         platform: ['mac']
 
     env:
@@ -197,3 +197,40 @@ jobs:
       ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
       GOPATH: /home/runner/work/anax/anax/go
+
+    steps:
+      # Upgrade Docker engine version, needed for building images
+      - name: Install Latest Docker Version
+        run: |
+          docker -v
+          brew -v
+
+      # # This is needed for our cross architecture docker image builds
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v2
+
+      # # Buildx allows us to perform our cross architecture docker image builds
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v2
+      #   with:
+      #     driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+
+      # # Authenticate Dockerhub to allow pushing to our image repo
+      # - name: Login to Dockerhub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USER }}
+      #     password: ${{ secrets.DOCKER_TKN }}
+
+      # # Checkout our Github repo
+      # - name: Checkout Github Repo
+      #   uses: actions/checkout@v2
+      #   with:
+      #     path: go/src/github.com/${{ github.repository }}
+
+      # # Prepare the environment
+      # - name: Set up golang 1.19
+      #   uses: actions/setup-go@v3
+      #   with:
+      #     go-version: '1.19'
+      #     check-latest: true
