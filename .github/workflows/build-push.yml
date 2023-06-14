@@ -10,10 +10,14 @@ on:
       - v2.30
       - v2.29
 
+env:
+  IMAGE_REPO: blakep7
+  BUILD_NUMBER: ${{ github.run_number }}
+
 # Jobs executed when workflow is triggered
 jobs:
   # Builds debian packages, RPM packages, and Docker images. Then pushes to Dockerhub.
-  build:
+  build-linux:
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
 
@@ -27,8 +31,6 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      BUILD_NUMBER: ${{ github.run_number }}    # From Github actions run number
-      IMAGE_REPO: blakep7                     # Dockerhub repo name
       ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
       CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
@@ -177,3 +179,21 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_push_script.sh
+
+  build-macos:
+    # Do not use any 'xl' version of macos or you will pay (literally)
+    runs-on: macos-12
+
+    strategy:
+      matrix:
+        architecture: ['amd64', 'arm64']
+        platform: ['mac']
+
+    env:
+      arch: ${{ matrix.architecture }}
+      os: ${{ matrix.platform }}
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      GOPATH: /home/runner/work/anax/anax/go
