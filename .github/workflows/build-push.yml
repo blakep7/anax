@@ -204,6 +204,8 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           brew install docker
+          cd /
+          ls -lGa
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
@@ -215,28 +217,28 @@ jobs:
       #   with:
       #     driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
 
-      # Authenticate Dockerhub to allow pushing to our image repo
-      - name: Login to Dockerhub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TKN }}
+      # # Authenticate Dockerhub to allow pushing to our image repo
+      # - name: Login to Dockerhub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USER }}
+      #     password: ${{ secrets.DOCKER_TKN }}
 
-      # Checkout our Github repo
-      - name: Checkout Github Repo
-        uses: actions/checkout@v2
-        with:
-          path: go/src/github.com/${{ github.repository }}
+      # # Checkout our Github repo
+      # - name: Checkout Github Repo
+      #   uses: actions/checkout@v2
+      #   with:
+      #     path: go/src/github.com/${{ github.repository }}
 
-      # Prepare the environment
-      - name: Set up golang 1.19
-        uses: actions/setup-go@v3
-        with:
-          go-version: '1.19'
-          check-latest: true
+      # # Prepare the environment
+      # - name: Set up golang 1.19
+      #   uses: actions/setup-go@v3
+      #   with:
+      #     go-version: '1.19'
+      #     check-latest: true
 
-      - run: |
-          go -v
-          docker -v
-          cd ${GOPATH}/src/github.com/${{ github.repository }}
-          ls -la
+      # - run: |
+      #     go -v
+      #     docker -v
+      #     cd ${GOPATH}/src/github.com/${{ github.repository }}
+      #     ls -la
