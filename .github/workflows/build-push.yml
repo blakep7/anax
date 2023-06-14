@@ -94,7 +94,6 @@ jobs:
   #     - name: Build Anax Binaries
   #       run: |
   #         cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-  #         if [[ "$os" == "linux" ]]; then export opsys="Linux"; fi
   #         make temp-mod-version
   #         make i18n-catalog
   #         make
@@ -235,8 +234,29 @@ jobs:
           go-version: '1.19'
           check-latest: true
 
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/configure_versions_script.sh
+      
+      # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
+      - name: Build Anax Binaries
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make temp-mod-version
+          # make i18n-catalog
+          make
+
+      # Make MacOS Packages
+      - name: Make MacOS Packages
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          make macpkg
+        env:
+          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+
       - run: |
-          go version
-          docker -v
-          cd ${GOPATH}/src/github.com/${{ github.repository }}
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          cd pkg/mac/build
           ls -la
