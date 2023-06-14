@@ -203,8 +203,6 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           brew install docker
-          openssl version
-          brew upgrade openssl
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
@@ -249,9 +247,9 @@ jobs:
           touch horizon-cli.crt
           echo "$KEY" >> horizon-cli.key
           echo "$CRT" >> horizon-cli.crt
-          openssl pkcs12 -legacy -export -inkey ./horizon-cli.key -in ./horizon-cli.crt -out ./horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
+          openssl pkcs12 -export -inkey ./horizon-cli.key -in ./horizon-cli.crt -out ./horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
           sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
-          sudo openssl pkcs12 -legacy -in horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
+          sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out pub.crt
           sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" pub.crt
           rm ./horizon-cli.key
           rm ./horizon-cli.crt
