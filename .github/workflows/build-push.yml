@@ -236,7 +236,7 @@ jobs:
           check-latest: true
 
       - run: |
-          go -v
+          go version
           docker -v
           cd ${GOPATH}/src/github.com/${{ github.repository }}
           ls -la
