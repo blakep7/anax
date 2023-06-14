@@ -244,7 +244,7 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
 
-          echo $CERT | base64 —decode > certificate.p12
+          echo $CERT | base64 —d -o certificate.p12
           security create-keychain -p testing build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p testing build.keychain
