@@ -197,7 +197,7 @@ jobs:
       CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
-      GOPATH: /home/runner/work/anax/anax/go
+      GOPATH: /Users/runner/work/anax/anax/go
 
     steps:
       # Upgrade Docker engine version, needed for building images
@@ -207,6 +207,10 @@ jobs:
           cd /
           ls -la
           cd /Users
+          ls -la
+          cd /Users/runner/
+          ls -la
+          cd /Users/runner/work/anax/anax/
           ls -la
 
       # # This is needed for our cross architecture docker image builds
