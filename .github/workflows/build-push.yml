@@ -258,6 +258,6 @@ jobs:
 
       - run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          cd pkg/mac/build
-          ls -la
+          # cd pkg/mac/build
+          # ls -la
           openssl version
