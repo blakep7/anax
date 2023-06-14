@@ -203,6 +203,7 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           brew install docker
+          # brew upgrade openssl
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
