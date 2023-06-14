@@ -203,7 +203,6 @@ jobs:
       # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
         run: |
-          docker -v
           brew -v
 
       # # This is needed for our cross architecture docker image builds
