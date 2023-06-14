@@ -205,7 +205,9 @@ jobs:
         run: |
           brew install docker
           cd /
-          ls -lGa
+          ls -la
+          cd /Users
+          ls -la
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
