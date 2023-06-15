@@ -248,8 +248,32 @@ jobs:
           echo "$KEY" >> horizon-cli.key
           echo "$CRT" >> horizon-cli.crt
           openssl pkcs12 -export -inkey horizon-cli.key -in horizon-cli.crt -out horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
+
+          # Create a keychain
+          security create-keychain -p tempPass build.keychain
+
+          # Make the keychain the default so identities are found
+          security default-keychain -s build.keychain
+
+          # Unlock the keychain
+          security unlock-keychain -p tempPass build.keychain
+
+          # Developer cert
+          security import horizon-cli.p12 -k build.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -T /usr/bin/codesign
+
+          # Set the partition list (sort of like an access control list)
+          security set-key-partition-list -S apple-tool:,apple: -s -k tempPass build.keychain >/dev/null
+
+          # remove certs
+          rm -fr *.p12
+
+          # Echo the identity, just so that we know it worked.
+          # This won't display anything secret.
+          security find-identity -v -p codesigning build.keychain
+
+
           # sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
-          sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out horizon-cli.crt
+          # sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out horizon-cli.crt
           # sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" horizon-cli.crt
           rm ./horizon-cli.key
           rm ./horizon-cli.crt
