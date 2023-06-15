@@ -193,6 +193,9 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
+      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
       GOPATH: /Users/runner/work/anax/anax/go
 
