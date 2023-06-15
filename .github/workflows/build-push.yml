@@ -295,12 +295,10 @@ jobs:
           echo "FROM alpine:latest" >> Dockerfile.macpkg.tarball
           echo "ADD ./macpkg.tar.gz ." >> Dockerfile.macpkg.tarball
 
+          # Make mac tarball
           mkdir ./macs
           cp ./pkg/mac/build/*.pkg ./macs 
-          cp ./pkg/mac/build/*.crt ./macs 2>/dev/null || :
-
-          # Make mac tarball
-          tar -czvf macpkg.tar.gz macs/*.pkg macs/*.crt
+          tar -czvf macpkg.tar.gz macs/*.pkg
 
           # Build docker image with only mac tarball
           docker build \
