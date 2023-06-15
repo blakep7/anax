@@ -17,7 +17,7 @@ env:
 
 # Jobs executed when workflow is triggered
 jobs:
-  # Builds macpkg packages, RPM packages, and Docker images. Then pushes to Dockerhub.
+  # Builds deb packages, RPM packages, and Docker images. Then pushes to Dockerhub.
   build-linux:
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
@@ -98,8 +98,8 @@ jobs:
           make i18n-catalog
           make
       
-      # Make our macpkg packages
-      - name: Make macpkg Packages
+      # Make our debpkg packages
+      - name: Make debpkg Packages
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make debpkgs
