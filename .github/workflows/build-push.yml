@@ -297,7 +297,7 @@ jobs:
 
           mkdir ./macs
           cp ./pkg/mac/build/*.pkg ./macs 
-          cp ./pkg/mac/build/*.crt ./macs 
+          cp ./pkg/mac/build/*.crt ./macs 2>/dev/null || :
 
           # Make mac tarball
           tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf macpkg.tar.gz ./macs/*.pkg ./macs/*.crt
