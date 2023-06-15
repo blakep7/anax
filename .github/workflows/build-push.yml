@@ -203,6 +203,10 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           brew install docker
+          openssl version
+          rm -rf /usr/local/Cellar/openssl
+          ln -sf /usr/local/Cellar/openssl@1.1/1.1.1t /usr/local/opt/openssl
+          ln -sf /usr/local/Cellar/openssl@1.1/1.1.1t/bin/openssl /usr/local/bin/openssl
 
       # # This is needed for our cross architecture docker image builds
       # - name: Set up QEMU
