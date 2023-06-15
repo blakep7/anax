@@ -319,10 +319,12 @@ jobs:
             password: ${{ secrets.DOCKER_TKN }}
 
         - name: Setup Working Directory and add Certificate File
+          id: workdir_setup
           run: |
             mkdir $RUNNER_TEMP/macs
             touch $RUNNER_TEMP/macs/horizon-cli.crt
             echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
+            echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
           env:
             HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
 
@@ -330,7 +332,7 @@ jobs:
           uses: actions/download-artifact@v3
           with:
             name: macos-${{ matrix.architecture }}-package
-            path: $RUNNER_TEMP/macs
+            path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
 
         - name: Lookat
           run: |
