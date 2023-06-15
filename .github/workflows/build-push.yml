@@ -279,8 +279,6 @@ jobs:
           name: macos-${{ matrix.architecture }}-package
           path: ./pkg/mac/build/*.pkg
 
-
-
   push-macos:
       needs: build-macos
 
