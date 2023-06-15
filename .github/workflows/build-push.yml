@@ -242,52 +242,26 @@ jobs:
       
       - name: Configure Certs
         run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          touch horizon-cli.key
-          touch horizon-cli.crt
-          echo "$KEY" >> horizon-cli.key
-          echo "$CRT" >> horizon-cli.crt
-          openssl pkcs12 -export -inkey horizon-cli.key -in horizon-cli.crt -out horizon-cli.p12 -password pass:${HORIZON_CLI_PRIV_KEY_PW}
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # Create a keychain
-          security create-keychain -p tempPass build.keychain
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
 
-          # Make the keychain the default so identities are found
-          security default-keychain -s build.keychain
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # Unlock the keychain
-          security unlock-keychain -p tempPass build.keychain
-
-          # Developer cert
-          security import horizon-cli.p12 -k build.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -T /usr/bin/codesign
-
-          # Set the partition list (sort of like an access control list)
-          security set-key-partition-list -S apple-tool:,apple: -s -k tempPass build.keychain >/dev/null
-
-          # remove certs
-          rm -fr *.p12
-
-          # Echo the identity, just so that we know it worked.
-          # This won't display anything secret.
-          security find-identity -v -p codesigning build.keychain
-
-
-          # sudo security import ./horizon-cli.p12 -k /Library/Keychains/System.keychain -P "$HORIZON_CLI_PRIV_KEY_PW" -f pkcs12 -A
-          # sudo openssl pkcs12 -in ./horizon-cli.p12 -clcerts -nokeys -password pass:${HORIZON_CLI_PRIV_KEY_PW} -out horizon-cli.crt
-          # sudo security add-trusted-cert -d -r trustRoot -k "/Library/Keychains/System.keychain" horizon-cli.crt
-          rm ./horizon-cli.key
-          rm ./horizon-cli.crt
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
         env:
-          HORIZON_CLI_PRIV_KEY_PW: 'testing'
-          KEY: ${{ secrets.HORIZONCLI_KEY }}
-          CRT: ${{ secrets.HORIZONCLI_CRT }}
-
-      - run: |
-          sudo security find-identity -v
-          echo "****"
-          security find-identity -v
-          echo "****"
-          security find-certificate -a
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
 
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
