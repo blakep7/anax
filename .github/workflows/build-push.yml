@@ -244,12 +244,20 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
 
-          # create variables
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          sudo security authorizationdb write com.apple.trust-settings.admin allow
 
-          # import certificate and provisioning profile from secrets
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
+
+          touch $RUNNER_TEMP/horizon-cli.key
+          touch $RUNNER_TEMP/horizon-cli.crt
+          echo "$HORIZONCLI_KEY" >> $RUNNER_TEMP/horizon-cli.key
+          echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
+
+          openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
+
+          security add-trusted-cert -d -r trustAsRoot -k /Library/Keychains/System.keychain $CERTIFICATE_PATH
 
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -257,15 +265,15 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -T /usr/bin/codesign -T /usr/bin/security
           security default-keychain -s $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security find-identity -v
         env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
+          HORIZONCLI_KEY: ${{ secrets.HORIZONCLI_KEY }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
