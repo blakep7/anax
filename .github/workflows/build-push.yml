@@ -199,6 +199,10 @@ jobs:
       VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
       GOPATH: /Users/runner/work/anax/anax/go
 
+    # Specify outputs to be used in our push-macos job
+    outputs:
+      ANAX_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
+
     steps:
       # Checkout our Github repo
       - name: Checkout Github Repo
@@ -318,6 +322,7 @@ jobs:
             username: ${{ secrets.DOCKER_USER }}
             password: ${{ secrets.DOCKER_TKN }}
 
+        # Setup a working directory in the temp folder path
         - name: Setup Working Directory and add Certificate File
           id: workdir_setup
           run: |
@@ -328,35 +333,33 @@ jobs:
           env:
             HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
 
+        # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
             name: macos-${{ matrix.architecture }}-package
             path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
 
-        - name: Lookat
+        # Push our .crt and .pkg to Dockerhub
+        - name: Make MacOS Package Tarball and Upload to Dockerhub
           run: |
-            ls -la /
-            ls -la $RUNNER_TEMP
-            ls -la $RUNNER_TEMP/macs
+            cd $RUNNER_TEMP
+            # Make mac tarball
+            tar -czvf macpkg.tar.gz macs
 
-        # run: |
-        #   # Make mac tarball
-        #   mkdir ./macs
-        #   cp ./pkg/mac/build/*.pkg ./macs 
-        #   tar -czvf macpkg.tar.gz macs/*.pkg
+            # Build docker image with only mac tarball
+            docker build \
+                --no-cache \
+                -t ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} \
+                -f Dockerfile.macpkg.tarball \
+                .
 
-        #   # Build docker image with only mac tarball
-        #   docker build \
-        #       --no-cache \
-        #       -t ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} \
-        #       -f Dockerfile.macpkg.tarball \
-        #       .
+            # Push docker image
+            docker push ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION}
 
-        #   # Push docker image
-        #   docker push ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION}
-
-        #   if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-        #       docker tag ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
-        #       docker push ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
-        #   fi
+            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
+                docker tag ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
+                docker push ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
+            fi
+          env:
+            ANAX_IMAGE_VERSION: ${{ needs.build-macos.outputs.ANAX_VERSION }}
