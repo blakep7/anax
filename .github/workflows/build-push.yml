@@ -67,7 +67,7 @@ jobs:
 
       # Checkout our Github repo
       - name: Checkout Github Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: go/src/github.com/${{ github.repository }}
 
@@ -206,7 +206,7 @@ jobs:
     steps:
       # Checkout our Github repo
       - name: Checkout Github Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: go/src/github.com/${{ github.repository }}
 
