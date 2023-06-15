@@ -270,6 +270,11 @@ jobs:
 
           # This prevents other popups that cause the github action to run indefinitely
           sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Clean sensitive files
+          rm $RUNNER_TEMP/horizon-cli.key
+          rm $RUNNER_TEMP/horizon-cli.crt
+          rm $CERTIFICATE_PATH
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}         # Contains the content of the horizon-cli.crt
           HORIZONCLI_KEY: ${{ secrets.HORIZONCLI_KEY }}         # Contains the content of the horizon-cli.key
