@@ -182,7 +182,7 @@ jobs:
 
   build-macos:
     # Do not use any 'xl' version of macos or you will pay (literally)
-    runs-on: macos-12
+    runs-on: macos-11
 
     strategy:
       matrix:
