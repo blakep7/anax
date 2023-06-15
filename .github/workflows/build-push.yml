@@ -262,8 +262,8 @@ jobs:
           sudo security add-trusted-cert -d -r trustRoot -p pkgSign -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -A
 
-          security default-keychain -d user -s $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple:, -s -k $MY_KEYCHAIN_PASSWORD -t private $MY_KEYCHAIN
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          # security set-key-partition-list -S apple-tool:,apple:, -s -k $MY_KEYCHAIN_PASSWORD -t private $MY_KEYCHAIN
 
           security find-identity -v
         env:
