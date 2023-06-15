@@ -258,10 +258,7 @@ jobs:
           openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
 
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k /Library/Keychains/System.keychain -T /usr/bin/codesign -T /usr/bin/security
-          sudo security find-certificate -c "horizon-cli-installer" -a -Z /Library/Keychains/System.keychain
-
           openssl pkcs12 -in $CERTIFICATE_PATH -out temp.pem -clcerts -nokeys -passin env:P12_PASSWORD
-
           sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain temp.pem
 
           # # create temporary keychain
