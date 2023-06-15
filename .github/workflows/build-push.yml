@@ -243,24 +243,23 @@ jobs:
       - name: Configure Certs
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/keychain.sh
 
-          # # create variables
-          # CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          # KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
-          # # import certificate and provisioning profile from secrets
-          # echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 
-          # # create temporary keychain
-          # security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          # security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          # security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          # # import certificate to keychain
-          # security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
-          # security default-keychain -s $KEYCHAIN_PATH
-          # security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          security default-keychain -s $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security find-identity -v
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
