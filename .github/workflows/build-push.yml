@@ -8,7 +8,6 @@ on:
       - master
       - v2.30
       - v2.29
-      - dev-macos
   workflow_dispatch:
 
 env:
@@ -17,8 +16,8 @@ env:
 
 # Jobs executed when workflow is triggered
 jobs:
-  # Builds deb packages, RPM packages, and Docker images. Then pushes to Dockerhub.
-  build-linux:
+  # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
+  linux-build-push:
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
 
@@ -180,9 +179,11 @@ jobs:
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_push_script.sh
 
-  build-macos:
+
+  # Build our mac packages on a macOS runner
+  mac-build:
     # Do not use any 'xl' version of macos or you will pay (literally)
-    # When mac silicon comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
+    # When mac silicon runner comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
     runs-on: macos-12
 
     strategy:
@@ -286,8 +287,11 @@ jobs:
           name: macos-${{ matrix.architecture }}-package
           path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
 
-  push-macos:
-      needs: build-macos
+
+  # This will push our built mac packages to Dockerhub
+  mac-push:
+      # Specify that we wait for mac-build to run and create the packages
+      needs: mac-build
 
       runs-on: ubuntu-20.04
 
@@ -365,4 +369,4 @@ jobs:
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
-            ANAX_IMAGE_VERSION: ${{ needs.build-macos.outputs.ANAX_VERSION }}
+            ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
