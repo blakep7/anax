@@ -257,12 +257,13 @@ jobs:
           # create temporary keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security default-keychain -s $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
-          sudo security add-trusted-cert -d -r trustRoot -p pkgSign -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
+          sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -A
 
-          sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           security find-identity -v
         env:
