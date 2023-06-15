@@ -182,6 +182,7 @@ jobs:
 
   build-macos:
     # Do not use any 'xl' version of macos or you will pay (literally)
+    # When mac silicon comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
     runs-on: macos-12
 
     strategy:
@@ -200,9 +201,11 @@ jobs:
 
     steps:
       # Upgrade Docker engine version, needed for building images
-      - name: Install Latest Docker Version
+      - name: Install Latest Docker Version and Start the Daemon
         run: |
-          brew install docker
+          brew install --cask docker
+          brew install docker-buildx
+          open -a Docker
 
       # Authenticate Dockerhub to allow pushing to our image repo
       - name: Login to Dockerhub
