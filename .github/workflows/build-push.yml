@@ -182,7 +182,8 @@ jobs:
 
   build-macos:
     # Do not use any 'xl' version of macos or you will pay (literally)
-    runs-on: macos-12
+    # Ternary added in prep for when apple silicon runner comes out 'arm64'
+    runs-on: ${{ (matrix.architecture == 'amd64') && 'macos-12' || '' }}
 
     strategy:
       matrix:
@@ -300,7 +301,7 @@ jobs:
           cp ./pkg/mac/build/*.crt ./macs 2>/dev/null || :
 
           # Make mac tarball
-          tar --transform 's/.*\/\([^\/]*\/[^\/]*\)$/\1/' -czvf macpkg.tar.gz ./macs/*.pkg ./macs/*.crt
+          tar -czvf macpkg.tar.gz macs/*.pkg macs/*.crt
 
           # Build docker image with only mac tarball
           docker build \
