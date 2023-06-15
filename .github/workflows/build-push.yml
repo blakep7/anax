@@ -243,10 +243,7 @@ jobs:
       - name: Configure Certs
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-
           sudo security authorizationdb write com.apple.trust-settings.admin allow
-
-          # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
 
@@ -255,21 +252,13 @@ jobs:
           echo "$HORIZONCLI_KEY" >> $RUNNER_TEMP/horizon-cli.key
           echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
 
+          sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain $RUNNER_TEMP/horizon-cli.crt
+
           openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
-
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k /Library/Keychains/System.keychain -T /usr/bin/codesign -T /usr/bin/security
-          openssl pkcs12 -in $CERTIFICATE_PATH -out temp.pem -clcerts -nokeys -passin env:P12_PASSWORD
-          sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain temp.pem
 
-          # # create temporary keychain
-          # security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          # security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          # security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # openssl pkcs12 -in $CERTIFICATE_PATH -out temp.pem -clcerts -nokeys -passin env:P12_PASSWORD
 
-          # # import certificate to keychain
-          # security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
-          # security default-keychain -s $KEYCHAIN_PATH
-          # security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security find-identity -v
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
