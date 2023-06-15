@@ -247,8 +247,8 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/horizon-cli.p12
           KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
 
-          # This does something???
-          # sudo security authorizationdb write com.apple.trust-settings.admin allow
+          # This does something important and the action will run indefinitely without it
+          sudo security authorizationdb write com.apple.trust-settings.admin allow
 
           # Use our secret crt and key to make the pkcs12 file
           touch $RUNNER_TEMP/horizon-cli.key
