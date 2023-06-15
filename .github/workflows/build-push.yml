@@ -193,28 +193,10 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
       GOPATH: /Users/runner/work/anax/anax/go
 
     steps:
-      # Upgrade Docker engine version, needed for building images
-      - name: Install Latest Docker Version and Start the Daemon
-        run: |
-          brew install --cask docker
-          sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
-          open -a /Applications/Docker.app --args --unattended --accept-license
-          while ! /Applications/Docker.app/Contents/Resources/bin/docker info &>/dev/null; do sleep 1; done
-
-      # Authenticate Dockerhub to allow pushing to our image repo
-      - name: Login to Dockerhub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TKN }}
-
       # Checkout our Github repo
       - name: Checkout Github Repo
         uses: actions/checkout@v2
@@ -267,20 +249,19 @@ jobs:
 
           # Clean sensitive files
           rm $RUNNER_TEMP/horizon-cli.key
-          rm $RUNNER_TEMP/horizon-cli.crt
           rm $CERTIFICATE_PATH
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}         # Contains the content of the horizon-cli.crt
           HORIZONCLI_KEY: ${{ secrets.HORIZONCLI_KEY }}         # Contains the content of the horizon-cli.key
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}   # Password for our temporary keychain (can be anything)
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}             # Password for our temporary pkcs12 file (can be anything)
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make temp-mod-version
-          # make i18n-catalog
+          make i18n-catalog
           make
 
       # Make MacOS Packages
@@ -291,30 +272,88 @@ jobs:
         env:
           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
 
-      # Put Packages in Tarball and Push to Dockerhub
-      - name: Push Packages to Dockerhub
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          touch Dockerfile.macpkg.tarball
-          echo "FROM alpine:latest" >> Dockerfile.macpkg.tarball
-          echo "ADD ./macpkg.tar.gz ." >> Dockerfile.macpkg.tarball
+      # Upload created package to artifacts to be used in next job
+      - name: Upload MacOS Package to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-${{ matrix.architecture }}-package
+          path: ./pkg/mac/build/*.pkg
 
-          # Make mac tarball
-          mkdir ./macs
-          cp ./pkg/mac/build/*.pkg ./macs 
-          tar -czvf macpkg.tar.gz macs/*.pkg
 
-          # Build docker image with only mac tarball
-          docker build \
-              --no-cache \
-              -t ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} \
-              -f Dockerfile.macpkg.tarball \
-              .
 
-          # Push docker image
-          docker push ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION}
+  push-macos:
+      needs: build-macos
 
-          if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-              docker tag ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
-              docker push ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
-          fi
+      runs-on: ubuntu-20.04
+
+      strategy:
+        matrix:
+          architecture: ['amd64']
+          platform: ['mac']
+
+      steps:
+        # Upgrade Docker engine version, needed for building images
+        - name: Install Latest Docker Version
+          run: |
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+            sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+            sudo apt-get update
+            sudo apt-get install docker-ce
+
+        # This is needed for our cross architecture docker image builds
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v2
+
+        # Buildx allows us to perform our cross architecture docker image builds
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
+          with:
+            driver: docker  # BuildX runs with docker daemon (doesn't support multi-arch image building)
+
+        # Authenticate Dockerhub to allow pushing to our image repo
+        - name: Login to Dockerhub
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_USER }}
+            password: ${{ secrets.DOCKER_TKN }}
+
+        - name: Setup Working Directory and add Certificate File
+          run: |
+            mkdir $RUNNER_TEMP/macs
+            touch $RUNNER_TEMP/macs/horizon-cli.crt
+            echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
+          env:
+            HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
+
+        - name: Download our MacOS Package Artifact
+          uses: actions/download-artifact@v3
+          with:
+            name: macos-${{ matrix.architecture }}-package
+            path: $RUNNER_TEMP/macs
+
+        - name: Lookat
+          run: |
+            ls -la /
+            ls -la $RUNNER_TEMP
+            ls -la $RUNNER_TEMP/macs
+
+        # run: |
+        #   # Make mac tarball
+        #   mkdir ./macs
+        #   cp ./pkg/mac/build/*.pkg ./macs 
+        #   tar -czvf macpkg.tar.gz macs/*.pkg
+
+        #   # Build docker image with only mac tarball
+        #   docker build \
+        #       --no-cache \
+        #       -t ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} \
+        #       -f Dockerfile.macpkg.tarball \
+        #       .
+
+        #   # Push docker image
+        #   docker push ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION}
+
+        #   if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
+        #       docker tag ${IMAGE_REPO}/${arch}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
+        #       docker push ${IMAGE_REPO}/${arch}_anax_macpkg:testing; \
+        #   fi
