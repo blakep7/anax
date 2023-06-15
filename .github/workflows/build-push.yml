@@ -280,7 +280,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: macos-${{ matrix.architecture }}-package
-          path: ./pkg/mac/build/*.pkg
+          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
 
   push-macos:
       needs: build-macos
