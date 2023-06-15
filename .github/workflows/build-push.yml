@@ -205,7 +205,9 @@ jobs:
         run: |
           brew install --cask docker
           brew install docker-buildx
-          open -a Docker
+          sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --quit-after-install
+          nohup /Applications/Docker.app/Contents/MacOS/Docker --unattended &
+          # open -a /Applications/Docker.app --args --unattended --accept-license
 
       # Authenticate Dockerhub to allow pushing to our image repo
       - name: Login to Dockerhub
