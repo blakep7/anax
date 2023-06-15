@@ -257,17 +257,19 @@ jobs:
 
           openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
 
-          security add-trusted-cert -d -r trustAsRoot -k /Library/Keychains/System.keychain $CERTIFICATE_PATH
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k /Library/Keychains/System.keychain -T /usr/bin/codesign -T /usr/bin/security
 
-          # create temporary keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # security add-trusted-cert -d -r trustAsRoot -k /Library/Keychains/System.keychain $CERTIFICATE_PATH
 
-          # import certificate to keychain
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -T /usr/bin/codesign -T /usr/bin/security
-          security default-keychain -s $KEYCHAIN_PATH
-          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+          # # create temporary keychain
+          # security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          # security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          # security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # # import certificate to keychain
+          # security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH -T /usr/bin/codesign
+          # security default-keychain -s $KEYCHAIN_PATH
+          # security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
           security find-identity -v
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}
