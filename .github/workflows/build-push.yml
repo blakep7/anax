@@ -252,27 +252,17 @@ jobs:
           touch $RUNNER_TEMP/horizon-cli.crt
           echo "$HORIZONCLI_KEY" >> $RUNNER_TEMP/horizon-cli.key
           echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
+          openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
 
-          # ?
-          security list-keychains -d user -s login.keychain
-
-          # Create temp keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
-
-          # Append temp keychain to the user domain
-          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed s/\"//g)
-
-          # Remove relock timeout
-          security set-keychain-settings "$KEYCHAIN_PATH"
-
-          # Unlock keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          # create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           sudo security add-trusted-cert -d -r trustRoot -p pkgSign -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
-
-          openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -A
 
+          security default-keychain -d user -s $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:, -s -k $MY_KEYCHAIN_PASSWORD -t private $MY_KEYCHAIN
 
           security find-identity -v
