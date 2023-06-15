@@ -344,6 +344,9 @@ jobs:
         - name: Make MacOS Package Tarball and Upload to Dockerhub
           run: |
             cd $RUNNER_TEMP
+            touch Dockerfile.macpkg.tarball
+            echo "FROM alpine:latest" >> Dockerfile.macpkg.tarball
+            echo "ADD ./macpkg.tar.gz ." >> Dockerfile.macpkg.tarball
             # Make mac tarball
             tar -czvf macpkg.tar.gz macs
 
