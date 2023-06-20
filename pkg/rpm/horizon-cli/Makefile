@@ -80,5 +80,5 @@ rpmbuild: require-version
 	@# See https://unix.stackexchange.com/a/58814
 	gzip < $(target_rpm) > $(target_rpm).gz
 	rm -f $(RPMNAME)-$(VERSION)   # remove the sym link
-
+	
 .PHONY: rpmbuild
