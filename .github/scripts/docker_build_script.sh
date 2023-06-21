@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Stops the Makefile from pushing the images to dockerhub so we can control when the 'testing' tag is pushed
 export IMAGE_OVERRIDE="true"
 
