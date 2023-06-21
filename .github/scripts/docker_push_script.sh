@@ -30,5 +30,5 @@ for image in "${images[@]}"; do
     else
         echo 'Error pushing docker images, variable $VERSION is unset'
     fi
-    
+
 done
