@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Names of the images created for each architecture
 if [[ ${arch} == 'amd64' ]]; then
     images=('amd64_agbot' 'amd64_anax' 'amd64_anax_k8s' 'amd64_auto-upgrade-cronjob_k8s' 'amd64_cloud-sync-service' 'amd64_edge-sync-service')
@@ -22,7 +24,11 @@ for image in "${images[@]}"; do
         docker push ${IMAGE_REPO}/${image}:testing
     fi
 
-    docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:${VERSION}
-    docker push ${IMAGE_REPO}/${image}:${VERSION}
-
+    if [[ -n "$VERSION" ]]; then
+        docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:${VERSION}
+        docker push ${IMAGE_REPO}/${image}:${VERSION}
+    else
+        echo 'Error pushing docker images, variable $VERSION is unset'
+    fi
+    
 done

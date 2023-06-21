@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Deal with Debian Package First
 
 # Make the temp Dockerfile for the debs only tarball image

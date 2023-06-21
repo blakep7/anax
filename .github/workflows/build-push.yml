@@ -11,12 +11,27 @@ on:
 
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
-  BUILD_NUMBER: ${{ github.run_number }}
+  RUN_NUMBER: ${{ github.run_number }}
+  RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
 
 # Jobs executed when workflow is triggered
 jobs:
+
+  # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
+  offset-build-number:
+    runs-on: ubuntu-20.04
+    outputs: 
+      BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
+    steps:
+      - name: Offset
+        id: offset
+        run: |
+          echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
+
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
   linux-build-push:
+    needs: offset-build-number
+
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
 
@@ -30,6 +45,7 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
       ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
       CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
@@ -96,8 +112,8 @@ jobs:
           make i18n-catalog
           make
       
-      # Make our debpkg packages
-      - name: Make debpkg Packages
+      # Make our debian packages
+      - name: Make Debian Packages
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           make debpkgs
@@ -114,6 +130,7 @@ jobs:
           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
 
       # Make our ppc64el RPM packages in docker container to specify architecture
+      # Comes from open source action: https://github.com/uraimo/run-on-arch-action
       ## By default this action will bind our $GITHUB_WORKSPACE to $GITHUB_WORKSPACE in the docker container
       - name: Make ppc64el RPM Packages
         if: matrix.architecture == 'ppc64el'
@@ -181,6 +198,8 @@ jobs:
 
   # Build our mac packages on a macOS runner
   mac-build:
+    needs: offset-build-number
+
     # Do not use any 'xl' version of macos or you will pay (literally)
     # When mac silicon runner comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
     runs-on: macos-12
@@ -193,6 +212,7 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
+      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
       ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
       CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
       ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
