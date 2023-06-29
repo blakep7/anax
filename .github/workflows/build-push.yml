@@ -279,7 +279,7 @@ jobs:
           rm $CERTIFICATE_PATH
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}         # Contains the content of the horizon-cli.crt
-          P12_BASE64: ${{ secrets.P12_BASE64 }}
+          P12_BASE64: ${{ secrets.P12_BASE64_LEGACY }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
