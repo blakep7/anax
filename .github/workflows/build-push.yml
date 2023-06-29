@@ -260,6 +260,7 @@ jobs:
           touch $RUNNER_TEMP/p12_encoded.txt
           echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
           base64 -d -i $RUNNER_TEMP/p12_encoded.txt -o $CERTIFICATE_PATH
+          ls -la $RUNNER_TEMP
 
           # Create a temporary keychain to bypass the prompts that cause the github action to run indefinitely
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
