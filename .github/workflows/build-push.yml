@@ -254,12 +254,11 @@ jobs:
           # This does something important and the action will run indefinitely without it
           sudo security authorizationdb write com.apple.trust-settings.admin allow
 
-          # Use our secret crt and key to make the pkcs12 file
-          touch $RUNNER_TEMP/horizon-cli.key
+          # Use our secret crt and P12 to create files
           touch $RUNNER_TEMP/horizon-cli.crt
-          echo "$HORIZONCLI_KEY" >> $RUNNER_TEMP/horizon-cli.key
+          touch $RUNNER_TEMP/p12_encoded.txt
           echo "$HORIZONCLI_CRT" >> $RUNNER_TEMP/horizon-cli.crt
-          openssl pkcs12 -export -inkey $RUNNER_TEMP/horizon-cli.key -in $RUNNER_TEMP/horizon-cli.crt -out $CERTIFICATE_PATH -password env:P12_PASSWORD
+          base64 -d -i $RUNNER_TEMP/p12_encoded.txt -o $CERTIFICATE_PATH
 
           # Create a temporary keychain to bypass the prompts that cause the github action to run indefinitely
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
@@ -275,11 +274,10 @@ jobs:
           sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           # Clean sensitive files
-          rm $RUNNER_TEMP/horizon-cli.key
           rm $CERTIFICATE_PATH
         env:
           HORIZONCLI_CRT: ${{ secrets.HORIZONCLI_CRT }}         # Contains the content of the horizon-cli.crt
-          HORIZONCLI_KEY: ${{ secrets.HORIZONCLI_KEY }}         # Contains the content of the horizon-cli.key
+          P12_BASE64: ${{ secrets.P12_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
 
