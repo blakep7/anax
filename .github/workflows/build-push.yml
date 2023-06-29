@@ -270,7 +270,9 @@ jobs:
 
           # Add our certificate first as a trusted certificate (so that it can be used) then import the whole pkcs12 certificate so the key is included
           sudo security add-trusted-cert -d -r trustRoot -k $KEYCHAIN_PATH $RUNNER_TEMP/horizon-cli.crt
+          echo "BEFORE"
           sudo security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -k $KEYCHAIN_PATH -A
+          echo "AFTER"
 
           # This prevents other popups that cause the github action to run indefinitely
           sudo security set-key-partition-list -S apple-tool:,apple:,pkgbuild:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
