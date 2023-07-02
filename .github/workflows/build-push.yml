@@ -352,6 +352,14 @@ jobs:
             username: ${{ secrets.DOCKER_USER }}
             password: ${{ secrets.DOCKER_TOKEN }}
 
+        # Authenticate GHCR to allow pushing to our alternate image registry
+        - name: Login to Github Container Registry
+          uses: docker/login-action@v2
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
         # Setup a working directory in the temp folder path
         - name: Setup Working Directory and add Certificate File
           id: workdir_setup
