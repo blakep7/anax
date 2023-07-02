@@ -12,6 +12,7 @@ on:
 
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
+  GITHUB_CONTAINER_REGISTRY: ${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
 
@@ -78,7 +79,15 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.DOCKER_TOKEN }} 
+          
+      # Authenticate GHCR to allow pushing to our alternate image registry
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # Checkout our Github repo
       - name: Checkout Github Repo
@@ -384,6 +393,8 @@ jobs:
             if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
                 docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
+                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
             ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
