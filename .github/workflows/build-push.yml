@@ -30,6 +30,7 @@ jobs:
         id: offset
         run: |
           echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
+          echo "$RUN_NUMBER"
 
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
   linux-build-push:
