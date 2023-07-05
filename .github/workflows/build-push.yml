@@ -8,8 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
-  workflow_dispatch:
-
+        
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ${{ github.repository_owner }}
@@ -21,7 +20,6 @@ jobs:
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
   offset-build-number:
-    environment: Test Permission Environment
     runs-on: ubuntu-20.04
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
@@ -30,7 +28,6 @@ jobs:
         id: offset
         run: |
           echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
-          echo "$RUN_NUMBER"
 
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
   linux-build-push:
