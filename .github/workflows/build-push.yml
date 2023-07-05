@@ -8,8 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
-      - dev-workflow-improvements
-
+      
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ${{ github.repository_owner }}
