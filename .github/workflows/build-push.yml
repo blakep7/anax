@@ -197,15 +197,13 @@ jobs:
         run: |
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_build_script.sh
-        env:
-          IMAGE_OVERRIDE: "true"
 
-      # # Push Docker Images to Dockerhub
-      # - name: Push Docker Images
-      #   if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
-      #   run: |
-      #     cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-      #     ./.github/scripts/docker_push_script.sh
+      # Push Docker Images to Dockerhub
+      - name: Push Docker Images
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        run: |
+          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
+          ./.github/scripts/docker_push_script.sh
 
 
   # Build our mac packages on a macOS runner
