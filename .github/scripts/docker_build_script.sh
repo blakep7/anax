@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stops the Makefile from pushing the images to dockerhub so we can control when the 'testing' tag is pushed
-export IMAGE_OVERRIDE="true"
+# export IMAGE_OVERRIDE="true"
 
 # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
 if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' ]]; then
