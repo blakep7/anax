@@ -8,8 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
-  workflow_dispatch:
-
+        
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
@@ -25,6 +24,50 @@ jobs:
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
     steps:
+      # Ensure that the repo variables and secrets are set before running any other steps
+      - name: Check User Set Variables
+        run: |
+          if [[ -z "$DOCKER_USER" ]]; then \
+          echo "::error::Secret DOCKER_USER was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKER_TOKEN" ]]; then \
+          echo "::error::Secret DOCKER_TOKEN was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_CRT" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_CRT was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_BASE64_ENC" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_BASE64_ENC was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_HORIZON_CLI_P12_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_HORIZON_CLI_P12_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$MACPKG_KEYCHAIN_PASSWORD" ]]; then \
+          echo "::error::Secret MACPKG_KEYCHAIN_PASSWORD was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$IMAGE_REPO" ]]; then \
+          echo "::error::Variable DOCKERHUB_REPO was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$RUN_NUMBER_OFFSET" ]]; then \
+          echo "::error::Variable RUN_NUMBER_OFFSET was not set"; \
+          exit 1; \
+          fi
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+          MACPKG_HORIZON_CLI_P12_BASE64_ENC: ${{ secrets.MACPKG_HORIZON_CLI_P12_BASE64_ENC }}
+          MACPKG_HORIZON_CLI_P12_PASSWORD: ${{ secrets.MACPKG_HORIZON_CLI_P12_PASSWORD }}
+          MACPKG_KEYCHAIN_PASSWORD: ${{ secrets.MACPKG_KEYCHAIN_PASSWORD }}
+
+      # Offset the Build Number
       - name: Offset
         id: offset
         run: |
