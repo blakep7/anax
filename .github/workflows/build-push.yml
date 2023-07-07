@@ -426,15 +426,11 @@ jobs:
             # Build docker image with only mac tarball
             docker build \
                 --no-cache \
-                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION} \
+                -t ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing \
                 -f Dockerfile.macpkg.tarball \
                 .
 
-            # Push docker image
-            docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION}
-
             if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:${ANAX_IMAGE_VERSION} ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
                 docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
                 docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
                 docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
