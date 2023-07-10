@@ -445,3 +445,4 @@ jobs:
             fi
           env:
             ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
+            
