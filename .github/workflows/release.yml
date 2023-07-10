@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Test echo
         run: |
-          echo "${{github.event.action}}"
+          echo "${{github.event.client_payload.Test_Load}}"
       # # Ensure that the repo variables and secrets are set before running any other steps
       # - name: Check User Set Variables
       #   run: |
