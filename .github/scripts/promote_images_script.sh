@@ -13,7 +13,7 @@ if [[ -z "$FROM_TAG" ]]; then
     echo "::error::Script Variable FROM_TAG was not set"
     exit 1
 fi
-if [[ -z "$TO_TAG" ]]; then
+if [[ -z "$TO_TAGS" ]]; then
     echo "::error::Script Variable TO_TAG was not set"
     exit 1
 fi
