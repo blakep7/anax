@@ -86,12 +86,11 @@ jobs:
       - name: Create GitHub Release
         run: |
           cd $GITHUB_WORKSPACE
-          ls -la
           COMMITISH=$(git log -n 1 --pretty=format:'%H')
 
           gh release create v${AGBOT_FULLVER} \
-            '$RUNNER_TEMP/release_files/upload/*.tar.gz'
-            './agent-install/agent-install.sh' \
+            ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
+            ./agent-install/agent-install.sh \
             -t "v${AGBOT_FULLVER} Packages" \
             -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
             --target $COMMITISH
