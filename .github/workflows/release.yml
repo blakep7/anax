@@ -85,11 +85,12 @@ jobs:
       # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz' \
       - name: Create GitHub Release
         run: |
+          cd ${GITHUB_WORKSPACE}
+          COMMITISH=$(git log -n 1 --pretty=format:'%H')
+
           cd $RUNNER_TEMP
           mkdir agent-install
           cp ${GITHUB_WORKSPACE}/agent-install/agent-install.sh ./agent-install
-
-          COMMITISH=$(git log -n 1 --pretty=format:'%H')
 
           gh release create v${AGBOT_FULLVER} \
             './release_files/upload/horizon-agent-linux-deb-amd64.tar.gz' \
