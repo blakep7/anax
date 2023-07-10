@@ -14,15 +14,16 @@ if [[ -z "$FROM_TAG" ]]; then
     exit 1
 fi
 if [[ -z "$TO_TAGS" ]]; then
-    echo "::error::Script Variable TO_TAG was not set"
+    echo "::error::Script Variable TO_TAGS was not set"
     exit 1
 fi
 
 for image in "${images[@]}"; do
-    docker pull ${FROM_REGISTRY}/${image}:${FROM_TAG}
-
+    # docker pull ${FROM_REGISTRY}/${image}:${FROM_TAG}
+    echo ${image}
     for tag in "${TO_TAGS[@]}"; do
-        docker tag ${FROM_REGISTRY}/${image}:${FROM_TAG} ${TO_REGISTRY}/${image}:${tag}
-        docker push ${TO_REGISTRY}/${image}:${tag}
+        echo ${tag}
+        # docker tag ${FROM_REGISTRY}/${image}:${FROM_TAG} ${TO_REGISTRY}/${image}:${tag}
+        # docker push ${TO_REGISTRY}/${image}:${tag}
     done
 done
