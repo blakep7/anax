@@ -9,7 +9,7 @@ jobs:
   create-release:
     runs-on: ubuntu-20.04
 
-    environment: release_environment
+    # environment: release_environment
 
     env:
       DOCKERHUB_REGISTRY: ${{ vars.DOCKERHUB_REPO }}

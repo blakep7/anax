@@ -21,7 +21,7 @@ fi
 for image in "${images[@]}"; do
     # docker pull ${FROM_REGISTRY}/${image}:${FROM_TAG}
     echo ${image}
-    for tag in "${TO_TAGS[@]}"; do
+    for tag in ${TO_TAGS[@]}; do
         echo ${tag}
         # docker tag ${FROM_REGISTRY}/${image}:${FROM_TAG} ${TO_REGISTRY}/${image}:${tag}
         # docker push ${TO_REGISTRY}/${image}:${tag}
