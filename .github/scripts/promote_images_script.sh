@@ -23,7 +23,7 @@ for image in "${images[@]}"; do
     docker pull ${FROM_REGISTRY}/${image}:${FROM_TAG}
 
     if [[ ${image} == 'amd64_agbot' ]]; then
-        echo "AGBOT_VERSION="$(docker inspect ${FROM_REGISTRY}/${image}:${FROM_TAG} | jq -r '.[].Config.Labels.version')" >> $GITHUB_OUTPUT
+        echo "AGBOT_VERSION=$(docker inspect ${FROM_REGISTRY}/${image}:${FROM_TAG} | jq -r '.[].Config.Labels.version')" >> $GITHUB_OUTPUT
     fi
 
     for tag in ${TO_TAGS[@]}; do
