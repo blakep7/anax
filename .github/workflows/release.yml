@@ -88,24 +88,13 @@ jobs:
           cd $GITHUB_WORKSPACE
           ls -la
           COMMITISH=$(git log -n 1 --pretty=format:'%H')
-          echo $COMMITISH
-          # cd $RUNNER_TEMP
-          # mkdir agent-install
-          # cp ${GITHUB_WORKSPACE}/agent-install/agent-install.sh ./agent-install
 
-          # gh release create v${AGBOT_FULLVER} \
-          #   './release_files/upload/horizon-agent-linux-deb-amd64.tar.gz' \
-          #   './release_files/upload/horizon-agent-linux-deb-arm64.tar.gz' \
-          #   './release_files/upload/horizon-agent-linux-deb-armhf.tar.gz' \
-          #   './release_files/upload/horizon-agent-linux-deb-ppc64el.tar.gz' \
-          #   './release_files/upload/horizon-agent-linux-rpm-x86_64.tar.gz' \
-          #   './release_files/upload/horizon-agent-linux-rpm-ppc64le.tar.gz' \
-          #   './release_files/upload/horizon-agent-macos-pkg-x86_64.tar.gz' \
-          #   './release_files/upload/horizon-agent-edge-cluster-files.tar.gz' \
-          #   './agent-install/agent-install.sh' \
-          #   -t "v${AGBOT_FULLVER} Packages" \
-          #   -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
-          #   --target $COMMITISH
+          gh release create v${AGBOT_FULLVER} \
+            '$RUNNER_TEMP/release_files/upload/*.tar.gz'
+            './agent-install/agent-install.sh' \
+            -t "v${AGBOT_FULLVER} Packages" \
+            -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
+            --target $COMMITISH
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AGBOT_FULLVER: ${{ steps.promotion.outputs.AGBOT_VERSION }}
