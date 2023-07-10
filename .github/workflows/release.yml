@@ -65,17 +65,16 @@ jobs:
           FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
           TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
           FROM_TAG: testing
-          TO_TAG: release
+          TO_TAGS: ('release' 'latest')
 
       # # Promote latest tags to Dockerhub
       # - name: Promote 'latest' tags to Dockerhub
-      #   run: |
-      #     echo Placeholder
+      #   run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
       #   env:
-      #     FROM_REGISTRY: #GHCR
-      #     TO_REGISTRY: #DCKRHUB
-      #     FROM_TAG: #TESTING
-      #     TO_TAG: #LATEST
+      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+      #     TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
+      #     FROM_TAG: testing
+      #     TO_TAG: latest
 
       # # Get Packages
       # - name: Get Packages from Existing Containers
