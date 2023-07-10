@@ -12,8 +12,8 @@ jobs:
     environment: release_environment
 
     env:
-      IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
-      GITHUB_CONTAINER_REGISTRY: ${{ github.repository_owner }}
+      DOCKERHUB_REGISTRY: ${{ vars.DOCKERHUB_REPO }}
+      GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
     steps:
       # Ensure that the repo variables and secrets are set before running any other steps
@@ -58,22 +58,14 @@ jobs:
       - name: Checkout Github Repo
         uses: actions/checkout@v3
 
-      - name: Test
-        run: |
-          cd /
-          ls -la
-          cd ${GITHUB_WORKSPACE}
-          ls -la
-
-      # # Promote release tags to Dockerhub
-      # - name: Promote 'release' tags to Dockerhub
-      #   run: |
-      #     echo Placeholder
-      #   env:
-      #     FROM_REGISTRY: #GHCR
-      #     TO_REGISTRY: #DCKRHUB
-      #     FROM_TAG: #TESTING
-      #     TO_TAG: #LATEST
+      # Promote release tags to Dockerhub
+      - name: Promote 'release' tags to Dockerhub
+        run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
+        env:
+          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
+          FROM_TAG: testing
+          TO_TAG: release
 
       # # Promote latest tags to Dockerhub
       # - name: Promote 'latest' tags to Dockerhub
