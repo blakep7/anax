@@ -65,7 +65,7 @@ jobs:
           FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
           TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
           FROM_TAG: testing
-          TO_TAGS: ("release" "latest")
+          TO_TAGS: ('release' 'latest')
 
       # # Promote latest tags to Dockerhub
       # - name: Promote 'latest' tags to Dockerhub
