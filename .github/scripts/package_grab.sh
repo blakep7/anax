@@ -18,7 +18,7 @@ MACArchitectures=('amd64')
 
 for arch in "${DEBArchitectures[@]}"; do
     docker pull ${FROM_REGISTRY}/${arch}_anax_debian:${FROM_TAG}
-    imageID=\$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_debian:${FROM_TAG})
+    imageID=$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_debian:${FROM_TAG})
     docker cp ${imageID}:debs .
     cp ./debs/* .
     rm -rf ./debs
@@ -31,7 +31,7 @@ done
 
 for arch in "${RPMArchitectures[@]}"; do
     docker pull ${FROM_REGISTRY}/${arch}_anax_rpm:${FROM_TAG}
-    imageID=\$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_rpm:${FROM_TAG})
+    imageID=$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_rpm:${FROM_TAG})
     docker cp ${imageID}:RPMS .
     cp ./RPMS/* .
     rm -rf ./RPMS
@@ -50,7 +50,7 @@ done
 
 for arch in "${MACArchitectures[@]}"; do
     docker pull ${FROM_REGISTRY}/${arch}_anax_macpkg:${FROM_TAG}
-    imageID=\$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_macpkg:${FROM_TAG})
+    imageID=$(docker create --name temp_image_grab ${FROM_REGISTRY}/${arch}_anax_macpkg:${FROM_TAG})
     docker cp ${imageID}:macs .
     cp ./macs/* .
     rm -rf ./macs
