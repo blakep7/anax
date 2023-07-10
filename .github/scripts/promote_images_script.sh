@@ -1,19 +1,19 @@
 #!/bin/bash
 
 if [[ -z "$FROM_REGISTRY" ]]; then
-    echo "::error::Script Variable FROM_REGISTRY was not set"
+    echo "::error::Script 'promote_images_script.sh' Variable FROM_REGISTRY was not set"
     exit 1
 fi
 if [[ -z "$TO_REGISTRY" ]]; then
-    echo "::error::Script Variable TO_REGISTRY was not set"
+    echo "::error::Script 'promote_images_script.sh' Variable TO_REGISTRY was not set"
     exit 1
 fi
 if [[ -z "$FROM_TAG" ]]; then
-    echo "::error::Script Variable FROM_TAG was not set"
+    echo "::error::Script 'promote_images_script.sh' Variable FROM_TAG was not set"
     exit 1
 fi
 if [[ -z "$TO_TAGS" ]]; then
-    echo "::error::Script Variable TO_TAGS was not set"
+    echo "::error::Script 'promote_images_script.sh' Variable TO_TAGS was not set"
     exit 1
 fi
 

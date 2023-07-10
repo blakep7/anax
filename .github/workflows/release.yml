@@ -58,8 +58,8 @@ jobs:
       - name: Checkout Github Repo
         uses: actions/checkout@v3
 
-      # Promote release tags to Dockerhub
-      - name: Promote 'release' tags to Dockerhub
+      # Promote release and latest tags to Dockerhub
+      - name: Promote 'release' and 'latest' tags to Dockerhub
         run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
         env:
           FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
@@ -67,19 +67,18 @@ jobs:
           FROM_TAG: testing
           TO_TAGS: release latest
 
-      # # Promote latest tags to Dockerhub
-      # - name: Promote 'latest' tags to Dockerhub
-      #   run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
-      #   env:
-      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-      #     TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
-      #     FROM_TAG: testing
-      #     TO_TAG: latest
+      # Get Packages
+      - name: Get Packages from Existing Containers
+        run: ${GITHUB_WORKSPACE}/.github/scripts/package_grab.sh
+        env:
+          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          FROM_TAG: testing
 
-      # # Get Packages
-      # - name: Get Packages from Existing Containers
-      #   run: |
-      #     echo Placeholder
+      - name: Upload Artifact to Check Files Created
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-package
+          path: ${{ runner.temp }}/release_files
 
       # # Create GH release page
       # - name: Create GitHub Release
