@@ -16,87 +16,84 @@ jobs:
       GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
     steps:
-      - name: Test echo
+      # Ensure that the repo variables and secrets are set before running any other steps
+      - name: Check User Set Variables
         run: |
-          echo "${{github.event.client_payload.Test_Load}}"
-      # # Ensure that the repo variables and secrets are set before running any other steps
-      # - name: Check User Set Variables
-      #   run: |
-      #     if [[ -z "$DOCKER_USER" ]]; then \
-      #     echo "::error::Secret DOCKER_USER was not set"; \
-      #     exit 1; \
-      #     fi
-      #     if [[ -z "$DOCKER_TOKEN" ]]; then \
-      #     echo "::error::Secret DOCKER_TOKEN was not set"; \
-      #     exit 1; \
-      #     fi
-      #   env:
-      #     DOCKER_USER: ${{ secrets.DOCKER_USER }}
-      #     DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          if [[ -z "$DOCKER_USER" ]]; then \
+          echo "::error::Secret DOCKER_USER was not set"; \
+          exit 1; \
+          fi
+          if [[ -z "$DOCKER_TOKEN" ]]; then \
+          echo "::error::Secret DOCKER_TOKEN was not set"; \
+          exit 1; \
+          fi
+        env:
+          DOCKER_USER: ${{ secrets.DOCKER_USER }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
-      # # Upgrade Docker engine version
-      # - name: Install Latest Docker Version
-      #   run: |
-      #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-      #     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-      #     sudo apt-get update
-      #     sudo apt-get install docker-ce
+      # Upgrade Docker engine version
+      - name: Install Latest Docker Version
+        run: |
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+          sudo apt-get update
+          sudo apt-get install docker-ce
           
-      # # Install JQ on runner to parse json files
-      # - name: Install jq
-      #   run: |
-      #     sudo apt update
-      #     sudo apt install -y jq
+      # Install JQ on runner to parse json files
+      - name: Install jq
+        run: |
+          sudo apt update
+          sudo apt install -y jq
 
-      # # Authenticate Dockerhub to allow pushing to our image repo
-      # - name: Login to Dockerhub
-      #   uses: docker/login-action@v2
-      #   with:
-      #     username: ${{ secrets.DOCKER_USER }}
-      #     password: ${{ secrets.DOCKER_TOKEN }} 
+      # Authenticate Dockerhub to allow pushing to our image repo
+      - name: Login to Dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_TOKEN }} 
           
-      # # Authenticate GHCR to allow pulling images (Use GHCR for pulling because Dockerhub rate limits)
-      # - name: Login to Github Container Registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.GITHUB_TOKEN }}
+      # Authenticate GHCR to allow pulling images (Use GHCR for pulling because Dockerhub rate limits)
+      - name: Login to Github Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      # # Checkout our Github repo
-      # - name: Checkout Github Repo
-      #   uses: actions/checkout@v3
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
 
-      # # Promote release and latest tags to Dockerhub
-      # - name: Promote 'release' and 'latest' tags to Dockerhub
-      #   id: promotion
-      #   run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
-      #   env:
-      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-      #     TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
-      #     FROM_TAG: testing
-      #     TO_TAGS: release latest
+      # Promote release and latest tags to Dockerhub
+      - name: Promote 'release' and 'latest' tags to Dockerhub
+        id: promotion
+        run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
+        env:
+          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
+          FROM_TAG: testing
+          TO_TAGS: release latest
 
-      # # Get Packages
-      # - name: Get Packages from Existing Containers
-      #   run: ${GITHUB_WORKSPACE}/.github/scripts/package_grab.sh
-      #   env:
-      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-      #     FROM_TAG: testing
+      # Get Packages
+      - name: Get Packages from Existing Containers
+        run: ${GITHUB_WORKSPACE}/.github/scripts/package_grab.sh
+        env:
+          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          FROM_TAG: testing
 
-      # # Create GH release page
-      # # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz' \
-      # - name: Create GitHub Release
-      #   run: |
-      #     cd $GITHUB_WORKSPACE
-      #     COMMITISH=$(git log -n 1 --pretty=format:'%H')
+      # Create GH release page
+      # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz' \
+      - name: Create GitHub Release
+        run: |
+          cd $GITHUB_WORKSPACE
+          COMMITISH=$(git log -n 1 --pretty=format:'%H')
 
-      #     gh release create v${AGBOT_FULLVER} \
-      #       ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
-      #       ./agent-install/agent-install.sh \
-      #       -t "v${AGBOT_FULLVER} Packages" \
-      #       -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
-      #       --target $COMMITISH
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     AGBOT_FULLVER: ${{ steps.promotion.outputs.AGBOT_VERSION }}
+          gh release create v${AGBOT_FULLVER} \
+            ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
+            ./agent-install/agent-install.sh \
+            -t "v${AGBOT_FULLVER} Packages" \
+            -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
+            --target $COMMITISH
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AGBOT_FULLVER: ${{ steps.promotion.outputs.AGBOT_VERSION }}
