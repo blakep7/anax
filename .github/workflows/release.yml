@@ -82,7 +82,8 @@ jobs:
           FROM_TAG: testing
 
       # Create GH release page
-      # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz' \
+      # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz'
+      # Temporarily use jenkins to upload the mac arm64 package to GHCR?
       - name: Create GitHub Release
         run: |
           cd $GITHUB_WORKSPACE
