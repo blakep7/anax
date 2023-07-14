@@ -102,7 +102,7 @@ jobs:
       # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
         run: |
-          sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io
           sudo rm -rf /var/lib/docker
           sudo rm -rf /var/lib/containerd
 
