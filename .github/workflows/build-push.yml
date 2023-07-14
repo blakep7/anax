@@ -15,10 +15,6 @@ env:
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
-  ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-  CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-  ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-  VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
 
 # Jobs executed when workflow is triggered
 jobs:
@@ -28,6 +24,10 @@ jobs:
     runs-on: ubuntu-20.04
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ steps.version.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ steps.version.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ steps.version.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ steps.version.outputs.VERSION_NO_BUILD_NUMBER }}
     steps:
       # Ensure that the repo variables and secrets are set before running any other steps
       - name: Check User Set Variables
@@ -84,6 +84,7 @@ jobs:
 
       # Configure version variables for later steps, stored in our workflow env. variables
       - name: Config Version Variables
+        id: version
         run: |
           cd $GITHUB_WORKSPACE
           ./.github/scripts/configure_versions_script.sh
@@ -104,7 +105,7 @@ jobs:
       - name: Upload Anax Files
         uses: actions/upload-artifact@v3
         with:
-          name: anax-agent-files-v${{ env.ANAX_IMAGE_VERSION }}
+          name: anax-agent-files-v${{ steps.version.outputs.ANAX_IMAGE_VERSION }}
           path: ${{ runner.temp }}/files_to_upload
 
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
@@ -125,21 +126,14 @@ jobs:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
       BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.VERSION_NO_BUILD_NUMBER }}
       GOPATH: /home/runner/work/anax/anax/go
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Test
-        run: |
-          echo $VERSION
-          echo $ANAX
-          echo $ESS
-          echo $CSS
-        env:
-          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
-          ANAX: ${{ env.ANAX_IMAGE_VERSION }}
-          CSS: ${{ env.CSS_IMAGE_VERSION }}
-          ESS: ${{ env.ESS_IMAGE_VERSION }}
       # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
         run: |
@@ -347,6 +341,10 @@ jobs:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
       BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
+      ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
+      CSS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.CSS_IMAGE_VERSION }}
+      ESS_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ESS_IMAGE_VERSION }}
+      VERSION_NO_BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.VERSION_NO_BUILD_NUMBER }}
       GOPATH: /Users/runner/work/anax/anax/go
 
     steps:
@@ -434,7 +432,7 @@ jobs:
   # This will push our built mac packages to Dockerhub
   mac-push:
       # Specify that we wait for mac-build to run and create the packages
-      needs: mac-build
+      needs: [prepare-workflow, mac-build]
 
       runs-on: ubuntu-20.04
 
@@ -488,7 +486,7 @@ jobs:
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
-            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ env.ANAX_IMAGE_VERSION }}
+            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
             path: ${{ runner.temp }}/macs
 
         # Push our .crt and .pkg to Dockerhub
@@ -514,4 +512,4 @@ jobs:
                 docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
-            ANAX_IMAGE_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
+            ANAX_IMAGE_VERSION: ${{ needs.prepare-workflow.outputs.ANAX_IMAGE_VERSION }}
