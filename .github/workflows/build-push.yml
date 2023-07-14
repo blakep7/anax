@@ -103,9 +103,7 @@ jobs:
       - name: Install Latest Docker Version
         run: |
           docker image ls
-          sudo apt-get purge docker-ce docker-ce-cli containerd.io runc
-          sudo rm -rf /var/lib/docker
-          sudo rm -rf /var/lib/containerd
+          sudo apt-get purge docker-ce docker-ce-cli containerd.io runc containerd
 
           curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
           sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
