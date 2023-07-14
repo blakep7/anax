@@ -250,6 +250,47 @@ jobs:
           cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
           ./.github/scripts/docker_push_script.sh
 
+      # Save Docker Images
+      - name: Save Docker Images
+        run: |
+          mkdir -p $RUNNER_TEMP/images_to_upload && cd $RUNNER_TEMP/images_to_upload
+          ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/.github/scripts/docker_save_script.sh
+
+      # Upload Docker Images
+      - name: Upload Docker Images to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-images-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/*.tar.gz
+
+      # Prep to Upload Packages
+      - name: Prepare to Upload Packages
+        run: |
+          mkdir -p $RUNNER_TEMP/rpm_to_upload
+          if [[ ${arch} == 'amd64' ]]; then \
+          cp /home/runner/rpmbuild/RPMS/x86_64/*.rpm $RUNNER_TEMP/rpm_to_upload; \
+          elif [[ ${arch} == 'ppc64el' ]]; then \
+          cp /home/runner/work/anax/anax/RPMS/*.rpm $RUNNER_TEMP/rpm_to_upload; \
+          fi
+          mkdir -p $RUNNER_TEMP/deb_to_upload
+          cp ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/deb/debs/*.deb $RUNNER_TEMP/deb_to_upload
+
+      # Upload RPM Packages
+      - name: Upload RPM Packages to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-rpm-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/rpm_to_upload/*.rpm
+          
+      # Upload DEB Packages
+      - name: Upload DEB Packages to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-deb-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/deb_to_upload/*.deb
+
+
+
 
   # Build our mac packages on a macOS runner
   mac-build:
@@ -351,12 +392,19 @@ jobs:
         env:
           VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
 
+      - name: Add Certificate File to Package Directory
+        run: |
+          touch ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/mac/build/horizon-cli.crt
+          echo "$MACPKG_HORIZON_CLI_CRT" >> ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/pkg/mac/build/horizon-cli.crt
+        env:
+          MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+
       # Upload created package to artifacts to be used in next job
       - name: Upload MacOS Package to Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: macos-${{ matrix.architecture }}-package
-          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*.pkg
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ env.GOPATH }}/src/github.com/${{ github.repository }}/pkg/mac/build/*
 
 
   # This will push our built mac packages to Dockerhub
@@ -409,21 +457,21 @@ jobs:
 
         # Setup a working directory in the temp folder path
         - name: Setup Working Directory and add Certificate File
-          id: workdir_setup
+          # id: workdir_setup
           run: |
             mkdir $RUNNER_TEMP/macs
-            touch $RUNNER_TEMP/macs/horizon-cli.crt
-            echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
-            echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
-          env:
-            MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
+            # touch $RUNNER_TEMP/macs/horizon-cli.crt
+            # echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
+            # echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
+          # env:
+          #   MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
 
         # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
             name: macos-${{ matrix.architecture }}-package
-            path: ${{ steps.workdir_setup.outputs.PKG_PATH }}
+            path: ${{ runner.temp }}/macs
 
         # Push our .crt and .pkg to Dockerhub
         - name: Make MacOS Package Tarball and Upload to Dockerhub
