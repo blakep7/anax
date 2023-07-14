@@ -15,12 +15,16 @@ env:
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
+  ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
+  CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+  ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
+  VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
 
 # Jobs executed when workflow is triggered
 jobs:
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
-  offset-build-number:
+  prepare-workflow:
     runs-on: ubuntu-20.04
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
@@ -74,9 +78,36 @@ jobs:
         run: |
           echo "BUILD_NUMBER=$(($RUN_NUMBER + $RUN_NUMBER_OFFSET))" >> "$GITHUB_OUTPUT"
 
+      # Checkout our Github repo
+      - name: Checkout Github Repo
+        uses: actions/checkout@v3
+
+      # Configure version variables for later steps, stored in our workflow env. variables
+      - name: Config Version Variables
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./.github/scripts/configure_versions_script.sh
+      
+      # Prepare files for upload
+      - name: Prepare Files for Upload
+        run: |
+          mkdir $RUNNER_TEMP/files_to_upload
+          mkdir $RUNNER_TEMP/files_to_tar && cd $RUNNER_TEMP/files_to_tar
+          cp $GITHUB_WORKSPACE/agent-install/agent-uninstall.sh .
+          cp $GITHUB_WORKSPACE/agent-install/k8s/* .
+          tar -czvf $RUNNER_TEMP/files_to_upload/horizon-agent-edge-cluster-files.tar.gz *.*
+          cp $GITHUB_WORKSPACE/agent-install/agent-install.sh $RUNNER_TEMP/files_to_upload
+
+      # Upload files needed for release management that don't change between runs
+      - name: Upload Anax Files
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-agent-files-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/files_to_upload
+
   # Builds on Linux: Deb Packages, RPM Packages, Docker images, and pushes to Dockerhub
   linux-build-push:
-    needs: offset-build-number
+    needs: prepare-workflow
 
     # The type of runner that the job will run on 
     runs-on: ubuntu-20.04
@@ -91,11 +122,7 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
       GOPATH: /home/runner/work/anax/anax/go
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -154,12 +181,6 @@ jobs:
         run: |
           echo "GO_VERSION=$(go version | awk '{print $3}')" >> $GITHUB_OUTPUT
 
-      # Configure version variables for later steps, stored in our workflow env. variables
-      - name: Config Version Variables
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/configure_versions_script.sh
-      
       # Increment version, make translation catalogs, build anax binaries for given ARCH and OS
       - name: Build Anax Binaries
         run: |
@@ -298,7 +319,7 @@ jobs:
 
   # Build our mac packages on a macOS runner
   mac-build:
-    needs: offset-build-number
+    needs: prepare-workflow
 
     # Do not use any 'xl' version of macos or you will pay (literally)
     # When mac silicon runner comes out we can update this runs-on to ${{ (matrix.architecture == 'amd64') && 'macos-12' || 'macSiliconVersion' }}
@@ -312,16 +333,8 @@ jobs:
     env:
       arch: ${{ matrix.architecture }}
       os: ${{ matrix.platform }}
-      BUILD_NUMBER: ${{ needs.offset-build-number.outputs.BUILD_NUMBER }}
-      ANAX_IMAGE_VERSION: ''                  # Updated in 'Config Version Variables' step
-      CSS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      ESS_IMAGE_VERSION: ''                   # Updated in 'Config Version Variables' step
-      VERSION_NO_BUILD_NUMBER: ''             # Updated in 'Config Version Variables' step
+      BUILD_NUMBER: ${{ needs.prepare-workflow.outputs.BUILD_NUMBER }}
       GOPATH: /Users/runner/work/anax/anax/go
-
-    # Specify outputs to be used in our push-macos job
-    outputs:
-      ANAX_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
 
     steps:
       # Checkout our Github repo
@@ -336,12 +349,6 @@ jobs:
         with:
           go-version: '1.19'
           check-latest: true
-
-      # Configure version variables for later steps, stored in our workflow env. variables
-      - name: Config Version Variables
-        run: |
-          cd ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}
-          ./.github/scripts/configure_versions_script.sh
 
       # Configure the certificates for package signing
       - name: Configure Certificates
@@ -468,7 +475,7 @@ jobs:
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
-            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ needs.mac-build.outputs.ANAX_VERSION }}
+            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ env.ANAX_IMAGE_VERSION }}
             path: ${{ runner.temp }}/macs
 
         # Push our .crt and .pkg to Dockerhub
@@ -494,4 +501,4 @@ jobs:
                 docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
             fi
           env:
-            ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
+            ANAX_IMAGE_VERSION: ${{ env.ANAX_IMAGE_VERSION }}
