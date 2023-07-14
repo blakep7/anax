@@ -18,6 +18,7 @@ ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${BUILD_NUMBER}"
 # ESS_IMAGE_VERSION="${ORIG_ESS_IMAGE_VERSION}-${UNIQUE_VERSION_HASH}"
 
 # Output configured versions for viewing
+echo "***Anax Version, No Build Number: ${ORIG_ANAX_IMAGE_VERSION}"
 echo "***Anax Version: ${ANAX_IMAGE_VERSION}"
 echo "***CSS Version: ${CSS_IMAGE_VERSION}"
 echo "***ESS Version: ${ESS_IMAGE_VERSION}"

@@ -129,6 +129,17 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Test
+        run: |
+          echo $VERSION
+          echo $ANAX
+          echo $ESS
+          echo $CSS
+        env:
+          VERSION: ${{ env.VERSION_NO_BUILD_NUMBER }}
+          ANAX: ${{ env.ANAX_IMAGE_VERSION }}
+          CSS: ${{ env.CSS_IMAGE_VERSION }}
+          ESS: ${{ env.ESS_IMAGE_VERSION }}
       # Upgrade Docker engine version, needed for building images
       - name: Install Latest Docker Version
         run: |
