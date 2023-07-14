@@ -457,21 +457,15 @@ jobs:
             password: ${{ secrets.GITHUB_TOKEN }}
 
         # Setup a working directory in the temp folder path
-        - name: Setup Working Directory and add Certificate File
-          # id: workdir_setup
+        - name: Setup Working Directory for Mac Package
           run: |
             mkdir $RUNNER_TEMP/macs
-            # touch $RUNNER_TEMP/macs/horizon-cli.crt
-            # echo "$MACPKG_HORIZON_CLI_CRT" >> $RUNNER_TEMP/macs/horizon-cli.crt
-            # echo "PKG_PATH="${RUNNER_TEMP}/macs"" >> $GITHUB_OUTPUT
-          # env:
-          #   MACPKG_HORIZON_CLI_CRT: ${{ secrets.MACPKG_HORIZON_CLI_CRT }}
 
         # Retrieve artifact from previous job
         - name: Download our MacOS Package Artifact
           uses: actions/download-artifact@v3
           with:
-            name: macos-${{ matrix.architecture }}-package
+            name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-mac-package-v${{ needs.mac-build.outputs.ANAX_VERSION }}
             path: ${{ runner.temp }}/macs
 
         # Push our .crt and .pkg to Dockerhub
