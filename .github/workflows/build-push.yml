@@ -87,6 +87,8 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ./.github/scripts/configure_versions_script.sh
+        env:
+          BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
       
       # Prepare files for upload
       - name: Prepare Files for Upload
