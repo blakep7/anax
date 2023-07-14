@@ -99,14 +99,14 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Upgrade Docker engine version, needed for building images
-      - name: Install Latest Docker Version
-        run: |
-          for pkg in docker.io docker-doc docker-compose containerd runc; do sudo apt-get remove $pkg; done
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-          sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
-          sudo apt-get update
-          sudo apt-get install docker-ce
+      # # Upgrade Docker engine version, needed for building images
+      # - name: Install Latest Docker Version
+      #   run: |
+      #     for pkg in docker.io docker-doc docker-compose containerd runc; do sudo apt-get remove $pkg; done
+      #     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      #     sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  $(lsb_release -cs)  stable"
+      #     sudo apt-get update
+      #     sudo apt-get install docker-ce
 
       # This is needed for our cross architecture docker image builds
       - name: Set up QEMU
