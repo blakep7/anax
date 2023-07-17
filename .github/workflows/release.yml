@@ -157,7 +157,8 @@ jobs:
           ls -la $RUNNER_TEMP/release_files/upload
 
           gh release create v${AGBOT_FULLVER} \
-            ${RUNNER_TEMP}/release_files/upload/*.* \
+            ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
+            ${RUNNER_TEMP}/release_files/upload/agent-install.sh \
             -t "v${AGBOT_FULLVER} Packages" \
             -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
             --target $COMMITISH
