@@ -145,7 +145,7 @@ jobs:
       # Temporarily use jenkins to upload the mac arm64 package to GHCR?
       - name: Create GitHub Release
         run: |
-          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:latest | jq -r .Labels.release)
+          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)
 
           COMMITISH=$(
             curl -L \
@@ -165,3 +165,4 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_HOST: github.com
           AGBOT_FULLVER: ${{ github.event.inputs.version }}
+           
