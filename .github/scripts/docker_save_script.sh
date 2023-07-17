@@ -22,7 +22,7 @@ elif [[ ${arch} == 'arm64' ]]; then
     images=('arm64_anax' 'arm64_anax_k8s' 'arm64_auto-upgrade-cronjob_k8s' 'arm64_edge-sync-service')
 fi
 
-# Push those images
+# Save those images
 for image in "${images[@]}"; do
 
     if [[ ${image} == *"cloud-sync-service"* ]]; then

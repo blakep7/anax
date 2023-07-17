@@ -69,27 +69,41 @@ jobs:
       #   uses: actions/checkout@v3
 
       - name: Get Images from Build Workflow Artifacts
+        id: get_images
         run: |
           mkdir $RUNNER_TEMP/downloaded_images && cd $RUNNER_TEMP/downloaded_images
           gh run download -n anax-linux-amd64-images-v${{ github.event.inputs.version }}
           gh run download -n anax-linux-arm64-images-v${{ github.event.inputs.version }}
           gh run download -n anax-linux-ppc64el-images-v${{ github.event.inputs.version }}
-          ls -la
+          
+          received_images=""
+
+          for image_file in *.tar.gz; do \
+          cat $image_file | docker load; \
+          received_images+="$image_file "
+          done
+          echo "RECEIVED_IMAGES=$received_images" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
           GH_HOST: github.com
           
-
-      # # Promote release and latest tags to Dockerhub
-      # - name: Promote 'release' and 'latest' tags to Dockerhub
-      #   id: promotion
-      #   run: ${GITHUB_WORKSPACE}/.github/scripts/promote_images_script.sh
-      #   env:
-      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-      #     TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
-      #     FROM_TAG: testing
-      #     TO_TAGS: release latest
+      # Promote release and latest tags to Dockerhub
+      - name: Promote 'release' and 'latest' tags to Dockerhub
+        run: |
+          images=($RECEIVED_IMAGES)
+          for image in "${images[@]}"; do
+              echo "Test: ${image}"
+              for tag in ${TO_TAGS[@]}; do
+                  docker tag ${FROM_REGISTRY}/${image}:${FROM_TAG} ${TO_REGISTRY}/${image}:${tag}
+                  docker push ${TO_REGISTRY}/${image}:${tag}
+              done
+          done
+        env:
+          REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          FROM_TAG: ${{ github.event.inputs.version }}
+          TO_TAGS: release latest
+          RECEIVED_IMAGES: ${{ steps.get_images.outputs.RECEIVED_IMAGES }}
 
       # # Get Packages
       # - name: Get Packages from Existing Containers
