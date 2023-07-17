@@ -79,8 +79,8 @@ jobs:
           received_images=""
 
           for image_file in *.tar.gz; do \
-          cat $image_file | docker load; \
-          received_images+="$image_file "
+          image_name=$(cat $image_file | docker load); \
+          received_images+="${image_name##* } "
           done
           echo "RECEIVED_IMAGES=$received_images" >> "$GITHUB_OUTPUT"
         env:
@@ -92,16 +92,19 @@ jobs:
       - name: Promote 'release' and 'latest' tags to Dockerhub
         run: |
           images=($RECEIVED_IMAGES)
+          tags=($TO_TAGS)
           for image in "${images[@]}"; do
-              echo "Test: ${image}"
-              for tag in ${TO_TAGS[@]}; do
-                  docker tag ${FROM_REGISTRY}/${image}:${FROM_TAG} ${TO_REGISTRY}/${image}:${tag}
-                  docker push ${TO_REGISTRY}/${image}:${tag}
+              image_name="${image##*/}"
+              image_name="${image_name%%:*}"
+              echo $image
+              echo $image_name
+              for tag in "${tags[@]}"; do
+                  docker tag ${image} ${TO_REGISTRY}/${image_name}:${tag}
+                  docker push ${TO_REGISTRY}/${image_name}:${tag}
               done
           done
         env:
-          REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-          FROM_TAG: ${{ github.event.inputs.version }}
+          TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
           TO_TAGS: release latest
           RECEIVED_IMAGES: ${{ steps.get_images.outputs.RECEIVED_IMAGES }}
 
