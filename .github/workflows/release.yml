@@ -136,8 +136,9 @@ jobs:
           cd ./upload
           gh run download -n anax-agent-files-v2.31.0-1496
         env:
-          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-          FROM_TAG: testing
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GH_HOST: github.com
 
       # Create GH release page
       # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz'
