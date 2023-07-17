@@ -1,7 +1,6 @@
 name: Anax Release Manager
 
 on:
-  # github.event.inputs.version
   workflow_dispatch:
     inputs:
       version:
@@ -63,11 +62,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      # # Checkout our Github repo
-      # - name: Checkout Github Repo
-      #   uses: actions/checkout@v3
-
+          
       - name: Get Images from Build Workflow Artifacts
         id: get_images
         run: |
@@ -80,7 +75,7 @@ jobs:
 
           for image_file in *.tar.gz; do \
           image_name=$(cat $image_file | docker load); \
-          received_images+="${image_name##* } "
+          received_images+="${image_name##Loaded image: } "
           done
           echo "RECEIVED_IMAGES=$received_images" >> "$GITHUB_OUTPUT"
         env:
@@ -94,10 +89,7 @@ jobs:
           images=($RECEIVED_IMAGES)
           tags=($TO_TAGS)
           for image in "${images[@]}"; do
-              image_name="${image##*/}"
-              image_name="${image_name%%:*}"
-              echo $image
-              echo $image_name
+              image_name=$(echo "$image" | sed 's/.*\///; s/:.*//')
               for tag in "${tags[@]}"; do
                   docker tag ${image} ${TO_REGISTRY}/${image_name}:${tag}
                   docker push ${TO_REGISTRY}/${image_name}:${tag}
@@ -108,27 +100,66 @@ jobs:
           TO_TAGS: release latest
           RECEIVED_IMAGES: ${{ steps.get_images.outputs.RECEIVED_IMAGES }}
 
-      # # Get Packages
-      # - name: Get Packages from Existing Containers
-      #   run: ${GITHUB_WORKSPACE}/.github/scripts/package_grab.sh
-      #   env:
-      #     FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
-      #     FROM_TAG: testing
+      # Get Packages
+      - name: Get Packages & Files from Build Workflow Artifacts
+        run: |
+          mkdir -p $RUNNER_TEMP/release_files/upload && cd $RUNNER_TEMP/release_files
 
-      # # Create GH release page
-      # # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz'
-      # # Temporarily use jenkins to upload the mac arm64 package to GHCR?
-      # - name: Create GitHub Release
-      #   run: |
-      #     cd $GITHUB_WORKSPACE
-      #     COMMITISH=$(git log -n 1 --pretty=format:'%H')
+          # Debian Packages
+          gh run download -n anax-linux-amd64-deb-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-deb-amd64.tar.gz *.deb
+          rm -rf *.deb
+          gh run download -n anax-linux-arm64-deb-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-deb-arm64.tar.gz *.deb
+          rm -rf *.deb
+          gh run download -n anax-linux-armhf-deb-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-deb-armhf.tar.gz *.deb
+          rm -rf *.deb
+          gh run download -n anax-linux-ppc64el-deb-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-deb-ppc64el.tar.gz *.deb
+          rm -rf *.deb
 
-      #     gh release create v${AGBOT_FULLVER} \
-      #       ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
-      #       ./agent-install/agent-install.sh \
-      #       -t "v${AGBOT_FULLVER} Packages" \
-      #       -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
-      #       --target $COMMITISH
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     AGBOT_FULLVER: ${{ steps.promotion.outputs.AGBOT_VERSION }}
+          # RPM Packages
+          gh run download -n anax-linux-ppc64el-rpm-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-rpm-ppc64le.tar.gz *.rpm
+          rm -rf *.rpm
+          gh run download -n anax-linux-amd64-rpm-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-linux-rpm-x86_64.tar.gz *.rpm
+          rm -rf *.rpm
+
+          # MacOS Packages
+          gh run download -n anax-mac-amd64-mac-package-v2.31.0-1496
+          tar -czvf upload/horizon-agent-macos-pkg-x86_64.tar.gz horizon*
+          rm -rf horizon*
+          
+          # Agent Files
+          cd ./upload
+          gh run download -n anax-agent-files-v2.31.0-1496
+        env:
+          FROM_REGISTRY: ${{ env.GITHUB_CONTAINER_REGISTRY }}
+          FROM_TAG: testing
+
+      # Create GH release page
+      # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz'
+      # Temporarily use jenkins to upload the mac arm64 package to GHCR?
+      - name: Create GitHub Release
+        run: |
+          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:latest | jq -r .Labels.release)
+
+          COMMITISH=$(
+            curl -L \
+              -H "Accept: application/vnd.github.sha" \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/${{ github.repository }}/commits/${SHORTCOMMIT})
+
+          gh release create v${AGBOT_FULLVER} \
+            ${RUNNER_TEMP}/release_files/upload/* \
+            -t "v${AGBOT_FULLVER} Packages" \
+            -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
+            --target $COMMITISH
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          GH_HOST: github.com
+          AGBOT_FULLVER: ${{ github.event.inputs.version }}
