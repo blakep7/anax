@@ -1,0 +1,44 @@
+name: Anax Release Manager
+
+on:
+  # github.event.inputs.version
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version of Anax to be released, with build number'
+        required: true
+        type: string
+
+  # Expecting a single client payload, version with build number
+  # github.event.client_payload.version
+  repository_dispatch:
+    types: [release_anax]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Test
+        run: |
+          echo "${{ github.event }}"
+          echo "${{ github.event_name }}"
+          echo "${{ github.event_path }}"
+  # prepare-environment:
+  #   runs-on: ubuntu-20.04
+
+  #   environment: release-environment
+
+  #   steps:
+  #     - name: Placeholder
+  #       run: |
+  #         echo "Placeholder"
+
+  # create-release:
+  #   runs-on: ubuntu-20.04
+
+  #   environment: release-environment
+
+  #   steps:
+  #     - name: Placeholder
+  #       run: |
+  #         echo "Placeholder"
