@@ -3,19 +3,52 @@ name: Anax Release Manager
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version of Anax to be released, with build number'
+      AGBOT_VERSION:
+        description: 'Version of Agbot Image to be released, with build number'
+        required: true
+        type: string
+      ANAX_VERSION:
+        description: 'Version of Anax Images and Packages to be released, with build number'
+        required: true
+        type: string
+      ANAX_K8S_VERSION:
+        description: 'Version of Anax K8s Images to be released, with build number'
+        required: true
+        type: string
+      ANAX_CSS_VERSION:
+        description: 'Version of CSS Image to be released, with build number'
+        required: true
+        type: string
+      ANAX_ESS_VERSION:
+        description: 'Version of ESS Image to be released, with build number'
         required: true
         type: string
 
 env:
   DOCKERHUB_REGISTRY: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  # Variables to control GH CLI
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_REPO: ${{ github.repository }}
+  GH_HOST: github.com
+  # Bring GitHub Contexts into Environment
+  AGBOT_VERSION: ${{ github.event.inputs.AGBOT_VERSION }}
+  ANAX_VERSION: ${{ github.event.inputs.ANAX_VERSION }}
+  ANAX_K8S_VERSION: ${{ github.event.inputs.ANAX_K8S_VERSION }}
+  ANAX_CSS_VERSION: ${{ github.event.inputs.ANAX_CSS_VERSION }}
+  ANAX_ESS_VERSION: ${{ github.event.inputs.ANAX_ESS_VERSION }}
+  # Space delimited arrays used in shell scripts, specifying what images should be promoted to release and latest in Dockerhub
+  DOCKERHUB_REGISTRY_RELEASE_TAGS: "release latest"
+  AGBOT_VERSION_IMAGES: "amd64_agbot"
+  ANAX_VERSION_IMAGES: "amd64_anax arm64_anax ppc64el_anax"
+  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s"
+  ANAX_CSS_VERSION_IMAGES: "amd64_cloud-sync-service"
+  ANAX_ESS_VERSION_IMAGES: "amd64_edge-sync-service arm64_edge-sync-service ppc64el_edge-sync-service"
 
 jobs:
-  create-release:
+  prepare-workflow:
     runs-on: ubuntu-20.04
-
+    
     environment: release_environment
 
     steps:
@@ -38,6 +71,21 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER }}
           DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
+  promote-images:
+    needs: prepare-workflow
+
+    runs-on: ubuntu-20.04
+
+    environment: release_environment
+
+    outputs:
+      RELEASE_SHORT_COMMIT_HASH: ${{ steps.get_images.outputs.RELEASE_SHORT_COMMIT_HASH }}
+
+    strategy:
+      matrix:
+        image-version: ['AGBOT_VERSION', 'ANAX_VERSION', 'ANAX_K8S_VERSION', 'ANAX_CSS_VERSION', 'ANAX_ESS_VERSION']
+
+    steps:
       # Upgrade Docker engine version
       - name: Install Latest Docker Version
         run: |
@@ -55,97 +103,86 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_TOKEN }} 
           
-      # Authenticate GHCR to allow pulling images (Use GHCR for pulling because Dockerhub rate limits)
-      - name: Login to Github Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Get Images from Build Workflow Artifacts
+      # Get the images for agbot based on the inputted version, 
+      - name: Get and Promote ${{ matrix.image-version }} Images
         id: get_images
         run: |
-          mkdir $RUNNER_TEMP/downloaded_images && cd $RUNNER_TEMP/downloaded_images
-          gh run download -n anax-linux-amd64-images-v${{ github.event.inputs.version }}
-          gh run download -n anax-linux-arm64-images-v${{ github.event.inputs.version }}
-          gh run download -n anax-linux-ppc64el-images-v${{ github.event.inputs.version }}
-          
-          received_images=""
+          IMAGE_LIST=$${{ matrix.image-version }}_IMAGES
+          IMAGE_VERSION=$${{ matrix.image-version }}
 
-          for image_file in *.tar.gz; do \
-          image_name=$(cat $image_file | docker load); \
-          received_images+="${image_name##Loaded image: } "
-          done
-          echo "RECEIVED_IMAGES=$received_images" >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HOST: github.com
-          
-      # Promote release and latest tags to Dockerhub
-      - name: Promote 'release' and 'latest' tags to Dockerhub
-        run: |
-          images=($RECEIVED_IMAGES)
-          tags=($TO_TAGS)
-          for image in "${images[@]}"; do
-              image_name=$(echo "$image" | sed 's/.*\///; s/:.*//')
-              for tag in "${tags[@]}"; do
-                  docker tag ${image} ${TO_REGISTRY}/${image_name}:${tag}
-                  docker push ${TO_REGISTRY}/${image_name}:${tag}
-              done
-          done
-        env:
-          TO_REGISTRY: ${{ env.DOCKERHUB_REGISTRY }}
-          TO_TAGS: release latest
-          RECEIVED_IMAGES: ${{ steps.get_images.outputs.RECEIVED_IMAGES }}
+          mkdir $RUNNER_TEMP/downloaded_${{ matrix.image-version }} && cd $RUNNER_TEMP/downloaded_${{ matrix.image-version }}
+          if [[ "$IMAGE_LIST" == *"amd64"* ]]; then
+            gh run download -n anax-linux-amd64-images-v${IMAGE_VERSION}
+          fi
+          if [[ "$IMAGE_LIST" == *"arm64"* ]]; then
+            gh run download -n anax-linux-arm64-images-v${IMAGE_VERSION}
+          fi
+          if [[ "$IMAGE_LIST" == *"ppc64el"* ]]; then
+            gh run download -n anax-linux-ppc64el-images-v${IMAGE_VERSION}
+          fi
 
+          IMAGES_TO_LOAD=($IMAGE_LIST)
+          RELEASE_TAGS=($DOCKERHUB_REGISTRY_RELEASE_TAGS)
+          for image in "${IMAGES_TO_LOAD[@]}"; do
+            cat ${image}.tar.gz | docker load
+            for tag in "${RELEASE_TAGS[@]}"; do
+              docker tag ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION} ${DOCKERHUB_REGISTRY}/${image}:${tag}
+              docker push ${DOCKERHUB_REGISTRY}/${image}:${tag}
+            done
+          done
+
+          if [[ "${{ matrix.image-version }}" == "AGBOT_VERSION" ]]; then
+            echo "RELEASE_SHORT_COMMIT_HASH=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)"  >> "$GITHUB_OUTPUT"
+          fi
+
+  create-release:
+    needs: promote-images
+
+    runs-on: ubuntu-20.04
+
+    steps:
       # Get Packages
       - name: Get Packages & Files from Build Workflow Artifacts
         run: |
           mkdir -p $RUNNER_TEMP/release_files/upload && cd $RUNNER_TEMP/release_files
 
           # Debian Packages
-          gh run download -n anax-linux-amd64-deb-package-v2.31.0-1496
+          gh run download -n anax-linux-amd64-deb-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-deb-amd64.tar.gz *.deb
           rm -rf *.deb
-          gh run download -n anax-linux-arm64-deb-package-v2.31.0-1496
+          gh run download -n anax-linux-arm64-deb-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-deb-arm64.tar.gz *.deb
           rm -rf *.deb
-          gh run download -n anax-linux-armhf-deb-package-v2.31.0-1496
+          gh run download -n anax-linux-armhf-deb-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-deb-armhf.tar.gz *.deb
           rm -rf *.deb
-          gh run download -n anax-linux-ppc64el-deb-package-v2.31.0-1496
+          gh run download -n anax-linux-ppc64el-deb-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-deb-ppc64el.tar.gz *.deb
           rm -rf *.deb
 
           # RPM Packages
-          gh run download -n anax-linux-ppc64el-rpm-package-v2.31.0-1496
+          gh run download -n anax-linux-ppc64el-rpm-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-rpm-ppc64le.tar.gz *.rpm
           rm -rf *.rpm
-          gh run download -n anax-linux-amd64-rpm-package-v2.31.0-1496
+          gh run download -n anax-linux-amd64-rpm-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-rpm-x86_64.tar.gz *.rpm
           rm -rf *.rpm
 
-          # MacOS Packages
-          gh run download -n anax-mac-amd64-mac-package-v2.31.0-1496
+          # MacOS Packages ??ARM??
+          gh run download -n anax-mac-amd64-mac-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-macos-pkg-x86_64.tar.gz horizon*
           rm -rf horizon*
           
           # Agent Files
           cd ./upload
-          gh run download -n anax-agent-files-v2.31.0-1496
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HOST: github.com
+          gh run download -n anax-agent-files-v${AGBOT_VERSION}
 
       # Create GH release page
       # missing './release_files/upload/horizon-agent-macos-pkg-arm64.tar.gz'
       # Temporarily use jenkins to upload the mac arm64 package to GHCR?
       - name: Create GitHub Release
         run: |
-          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)
+          # SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)
 
           COMMITISH=$(
             curl -L \
@@ -154,15 +191,11 @@ jobs:
               -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/${{ github.repository }}/commits/${SHORTCOMMIT})
 
-          gh release create v${AGBOT_FULLVER} \
+          gh release create v${AGBOT_VERSION} \
             ${RUNNER_TEMP}/release_files/upload/*.tar.gz \
             ${RUNNER_TEMP}/release_files/upload/agent-install.sh \
-            -t "v${AGBOT_FULLVER} Packages" \
-            -n "Horizon agent packages from the ${AGBOT_FULLVER} build" \
+            -t "v${AGBOT_VERSION} Packages" \
+            -n "Horizon agent packages from the ${AGBOT_VERSION} build" \
             --target $COMMITISH
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GH_REPO: ${{ github.repository }}
-          GH_HOST: github.com
-          AGBOT_FULLVER: ${{ github.event.inputs.version }}
-           
+          SHORTCOMMIT: ${{ needs.promote-images.outputs.RELEASE_SHORT_COMMIT_HASH }}
