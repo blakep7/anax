@@ -76,8 +76,6 @@ jobs:
 
     runs-on: ubuntu-20.04
 
-    environment: release_environment
-
     outputs:
       RELEASE_SHORT_COMMIT_HASH: ${{ steps.get_images.outputs.RELEASE_SHORT_COMMIT_HASH }}
 
