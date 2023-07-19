@@ -76,9 +76,6 @@ jobs:
 
     runs-on: ubuntu-20.04
 
-    outputs:
-      RELEASE_SHORT_COMMIT_HASH: ${{ steps.get_images.outputs.RELEASE_SHORT_COMMIT_HASH }}
-
     strategy:
       matrix:
         image-version: ['AGBOT_VERSION', 'ANAX_VERSION', 'ANAX_K8S_VERSION', 'ANAX_CSS_VERSION', 'ANAX_ESS_VERSION']
@@ -103,35 +100,20 @@ jobs:
           
       # Get the images for agbot based on the inputted version, 
       - name: Get and Promote ${{ matrix.image-version }} Images
-        id: get_images
         run: |
           IMAGE_LIST=$${{ matrix.image-version }}_IMAGES
           IMAGE_VERSION=$${{ matrix.image-version }}
 
-          mkdir $RUNNER_TEMP/downloaded_${{ matrix.image-version }} && cd $RUNNER_TEMP/downloaded_${{ matrix.image-version }}
-          if [[ "$IMAGE_LIST" == *"amd64"* ]]; then
-            gh run download -n anax-linux-amd64-images-v${IMAGE_VERSION}
-          fi
-          if [[ "$IMAGE_LIST" == *"arm64"* ]]; then
-            gh run download -n anax-linux-arm64-images-v${IMAGE_VERSION}
-          fi
-          if [[ "$IMAGE_LIST" == *"ppc64el"* ]]; then
-            gh run download -n anax-linux-ppc64el-images-v${IMAGE_VERSION}
-          fi
-
           IMAGES_TO_LOAD=($IMAGE_LIST)
           RELEASE_TAGS=($DOCKERHUB_REGISTRY_RELEASE_TAGS)
           for image in "${IMAGES_TO_LOAD[@]}"; do
+            gh run download -n anax-linux-${image}-image-v${IMAGE_VERSION}
             cat ${image}.tar.gz | docker load
             for tag in "${RELEASE_TAGS[@]}"; do
               docker tag ${DOCKERHUB_REGISTRY}/${image}:${IMAGE_VERSION} ${DOCKERHUB_REGISTRY}/${image}:${tag}
               docker push ${DOCKERHUB_REGISTRY}/${image}:${tag}
             done
           done
-
-          if [[ "${{ matrix.image-version }}" == "AGBOT_VERSION" ]]; then
-            echo "RELEASE_SHORT_COMMIT_HASH=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)"  >> "$GITHUB_OUTPUT"
-          fi
 
   create-release:
     needs: promote-images
@@ -180,7 +162,10 @@ jobs:
       # Temporarily use jenkins to upload the mac arm64 package to GHCR?
       - name: Create GitHub Release
         run: |
-          # SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:release | jq -r .Labels.release)
+          mkdir -p $RUNNER_TEMP/download_agbot && cd $RUNNER_TEMP/download_agbot
+          gh run download -n anax-linux-amd64_agbot-image-v${AGBOT_VERSION}
+          docker load --input amd64_agbot.tar.gz
+          SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:${AGBOT_VERSION} | jq -r .Labels.release)
 
           COMMITISH=$(
             curl -L \
@@ -195,5 +180,3 @@ jobs:
             -t "v${AGBOT_VERSION} Packages" \
             -n "Horizon agent packages from the ${AGBOT_VERSION} build" \
             --target $COMMITISH
-        env:
-          SHORTCOMMIT: ${{ needs.promote-images.outputs.RELEASE_SHORT_COMMIT_HASH }}
