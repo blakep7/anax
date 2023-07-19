@@ -286,13 +286,53 @@ jobs:
           mkdir -p $RUNNER_TEMP/images_to_upload && cd $RUNNER_TEMP/images_to_upload
           ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/.github/scripts/docker_save_script.sh
 
-      # Upload Docker Images
+      # Upload Agbot Docker Images
+      - name: Upload Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-agbot-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_agbot.tar.gz
+      
+      # Upload Anax Docker Images
       - name: Upload Docker Images to Artifacts
         if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
         uses: actions/upload-artifact@v3
         with:
-          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-images-v${{ env.ANAX_IMAGE_VERSION }}
-          path: ${{ runner.temp }}/images_to_upload/*.tar.gz
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-anax-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_anax.tar.gz
+
+      # Upload Anax K8s Docker Images
+      - name: Upload Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-anax-k8s-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_anax_k8s.tar.gz
+
+      # Upload Anax K8s Cronjob Docker Images
+      - name: Upload Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-anax-k8s-cronjob-image-v${{ env.ANAX_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_auto-upgrade-cronjob_k8s.tar.gz
+
+      # Upload CSS Docker Images
+      - name: Upload Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-css-image-v${{ env.CSS_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_cloud-sync-service.tar.gz
+
+      # Upload ESS Docker Images
+      - name: Upload Docker Images to Artifacts
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        uses: actions/upload-artifact@v3
+        with:
+          name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-ess-image-v${{ env.ESS_IMAGE_VERSION }}
+          path: ${{ runner.temp }}/images_to_upload/${{ matrix.architecture }}_edge-sync-service.tar.gz
 
       # Prep to Upload Packages
       - name: Prepare to Upload Packages
