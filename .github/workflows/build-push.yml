@@ -8,7 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
-      # - dev-release-mgmt
+      - dev-release-mgmt
         
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
