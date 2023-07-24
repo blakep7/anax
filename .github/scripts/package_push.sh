@@ -22,6 +22,12 @@ if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then
 
     docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing
     docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing
+else
+    docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${IMAGE_REPO}/${arch}_anax_debian:testing_${GITHUB_REF_NAME}
+    docker push ${IMAGE_REPO}/${arch}_anax_debian:testing_${GITHUB_REF_NAME}
+
+    docker tag ${IMAGE_REPO}/${arch}_anax_debian:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing_${GITHUB_REF_NAME}
+    docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_debian:testing_${GITHUB_REF_NAME}
 fi
 
 # Deal with RPM Package
@@ -53,5 +59,11 @@ if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
 
         docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing
         docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing
+    else
+        docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${IMAGE_REPO}/${arch}_anax_rpm:testing_${GITHUB_REF_NAME}
+        docker push ${IMAGE_REPO}/${arch}_anax_rpm:testing_${GITHUB_REF_NAME}
+
+        docker tag ${IMAGE_REPO}/${arch}_anax_rpm:testing ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing_${GITHUB_REF_NAME}
+        docker push ${GITHUB_CONTAINER_REGISTRY}/${arch}_anax_rpm:testing_${GITHUB_REF_NAME}
     fi
 fi

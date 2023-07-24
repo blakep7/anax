@@ -17,6 +17,12 @@ for image in "${images[@]}"; do
 
         docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
         docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+    else
+        docker tag ${IMAGE_REPO}/${image}:testing ${IMAGE_REPO}/${image}:testing_${GITHUB_REF_NAME}
+        docker push ${IMAGE_REPO}/${image}:testing_${GITHUB_REF_NAME}
+
+        docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing_${GITHUB_REF_NAME}
+        docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing_${GITHUB_REF_NAME}
     fi
 
 done
