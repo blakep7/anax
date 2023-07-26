@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Makes and pushes arch_cloud-sync-service and arch_edge-sync-service images
-if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x']]; then
+if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 'arm64' || ${arch} == 's390x' ]]; then
     make ess-docker-image
     make css-docker-image
 fi
