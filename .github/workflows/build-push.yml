@@ -327,7 +327,7 @@ jobs:
 
       # Save Docker Images
       - name: Save Docker Images
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         run: |
           mkdir -p $RUNNER_TEMP/images_to_upload && cd $RUNNER_TEMP/images_to_upload
           ${GOPATH}/src/github.com/${GITHUB_REPOSITORY}/.github/scripts/docker_save_script.sh
@@ -342,7 +342,7 @@ jobs:
       
       # Upload Anax Docker Images
       - name: Upload Anax Docker Images to Artifacts
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         uses: actions/upload-artifact@v3
         with:
           name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_anax-image-v${{ env.ANAX_IMAGE_VERSION }}
@@ -350,7 +350,7 @@ jobs:
 
       # Upload Anax K8s Docker Images
       - name: Upload Anax K8s Docker Images to Artifacts
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         uses: actions/upload-artifact@v3
         with:
           name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_anax_k8s-image-v${{ env.ANAX_IMAGE_VERSION }}
@@ -358,7 +358,7 @@ jobs:
 
       # Upload Anax K8s Cronjob Docker Images
       - name: Upload Anax K8s Cronjob Docker Images to Artifacts
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         uses: actions/upload-artifact@v3
         with:
           name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_auto-upgrade-cronjob_k8s-image-v${{ env.ANAX_IMAGE_VERSION }}
@@ -374,7 +374,7 @@ jobs:
 
       # Upload ESS Docker Images
       - name: Upload ESS Docker Images to Artifacts
-        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64')
+        if: (matrix.architecture == 'amd64' || matrix.architecture == 'ppc64el' || matrix.architecture == 'arm64' || matrix.architecture == 's390x')
         uses: actions/upload-artifact@v3
         with:
           name: anax-${{ matrix.platform }}-${{ matrix.architecture }}_edge-sync-service-image-v${{ env.ESS_IMAGE_VERSION }}
@@ -386,7 +386,7 @@ jobs:
           mkdir -p $RUNNER_TEMP/rpm_to_upload
           if [[ ${arch} == 'amd64' ]]; then \
           cp /home/runner/rpmbuild/RPMS/x86_64/*.rpm $RUNNER_TEMP/rpm_to_upload; \
-          elif [[ ${arch} == 'ppc64el' ]]; then \
+          elif [[ ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then \
           cp /home/runner/work/anax/anax/RPMS/*.rpm $RUNNER_TEMP/rpm_to_upload; \
           fi
           mkdir -p $RUNNER_TEMP/deb_to_upload
@@ -394,7 +394,7 @@ jobs:
 
       # Upload RPM Packages
       - name: Upload RPM Packages to Artifacts
-        if: (matrix.architecture == 'ppc64el' || matrix.architecture == 'amd64')
+        if: (matrix.architecture == 'ppc64el' || matrix.architecture == 'amd64' || matrix.architecture == 's390x')
         uses: actions/upload-artifact@v3
         with:
           name: anax-${{ matrix.platform }}-${{ matrix.architecture }}-rpm-package-v${{ env.ANAX_IMAGE_VERSION }}
