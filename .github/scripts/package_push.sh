@@ -31,7 +31,7 @@ else
 fi
 
 # Deal with RPM Package
-if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' ]]; then
+if [[ ${arch} == 'amd64' || ${arch} == 'ppc64el' || ${arch} == 's390x' ]]; then
 
     # Make the temp Dockerfile for the RPM only tarball image
     touch Dockerfile.rpm.tarball
