@@ -40,10 +40,10 @@ env:
   # Space delimited arrays used in shell scripts, specifying what images should be promoted to what tags in Dockerhub
   DOCKERHUB_REGISTRY_RELEASE_TAGS: "latest"
   AGBOT_VERSION_IMAGES: "amd64_agbot"
-  ANAX_VERSION_IMAGES: "amd64_anax arm64_anax ppc64el_anax"
-  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s"
+  ANAX_VERSION_IMAGES: "amd64_anax arm64_anax ppc64el_anax s390x_anax"
+  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s s390x_anax_k8s s390x_auto-upgrade-cronjob_k8"
   ANAX_CSS_VERSION_IMAGES: "amd64_cloud-sync-service"
-  ANAX_ESS_VERSION_IMAGES: "amd64_edge-sync-service arm64_edge-sync-service ppc64el_edge-sync-service"
+  ANAX_ESS_VERSION_IMAGES: "amd64_edge-sync-service arm64_edge-sync-service ppc64el_edge-sync-service s390x_edge-sync-service"
 
 jobs:
   prepare-workflow:
@@ -141,6 +141,9 @@ jobs:
           gh run download -n anax-linux-ppc64el-deb-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-deb-ppc64el.tar.gz *.deb
           rm -rf *.deb
+          gh run download -n anax-linux-s390x-deb-package-v${AGBOT_VERSION}
+          tar -czvf upload/horizon-agent-linux-deb-s390x.tar.gz *.deb
+          rm -rf *.deb
 
           # RPM Packages
           gh run download -n anax-linux-ppc64el-rpm-package-v${AGBOT_VERSION}
@@ -148,6 +151,9 @@ jobs:
           rm -rf *.rpm
           gh run download -n anax-linux-amd64-rpm-package-v${AGBOT_VERSION}
           tar -czvf upload/horizon-agent-linux-rpm-x86_64.tar.gz *.rpm
+          rm -rf *.rpm
+          gh run download -n anax-linux-s390x-rpm-package-v${AGBOT_VERSION}
+          tar -czvf upload/horizon-agent-linux-rpm-s390x.tar.gz *.rpm
           rm -rf *.rpm
 
           # MacOS Packages ??ARM??
