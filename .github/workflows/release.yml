@@ -83,7 +83,7 @@ jobs:
           
           sleep 10
 
-          if [[ RELEASE_STATUS != 'null' ]]; then
+          if [[ $RELEASE_STATUS != 'null' ]]; then
             echo "::error::Attempted to create a release for a version of Anax that already has a release page, see $RELEASE_STATUS"
             exit 1
           fi
