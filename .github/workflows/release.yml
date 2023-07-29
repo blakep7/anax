@@ -81,6 +81,8 @@ jobs:
               https://api.github.com/repos/${{ github.repository }}/releases/tags/v${{ env.AGBOT_VERSION }} \
               | jq -r '.html_url')
           
+          sleep 10
+
           if [[ RELEASE_STATUS != 'null' ]]; then
             echo "::error::Attempted to create a release for a version of Anax that already has a release page, see $RELEASE_STATUS"
             exit 1
