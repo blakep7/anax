@@ -41,7 +41,7 @@ env:
   DOCKERHUB_REGISTRY_RELEASE_TAGS: "latest"
   AGBOT_VERSION_IMAGES: "amd64_agbot"
   ANAX_VERSION_IMAGES: "amd64_anax arm64_anax ppc64el_anax s390x_anax"
-  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s s390x_anax_k8s s390x_auto-upgrade-cronjob_k8"
+  ANAX_K8S_VERSION_IMAGES: "amd64_anax_k8s amd64_auto-upgrade-cronjob_k8s arm64_anax_k8s arm64_auto-upgrade-cronjob_k8s ppc64el_anax_k8s ppc64el_auto-upgrade-cronjob_k8s s390x_anax_k8s s390x_auto-upgrade-cronjob_k8s"
   ANAX_CSS_VERSION_IMAGES: "amd64_cloud-sync-service"
   ANAX_ESS_VERSION_IMAGES: "amd64_edge-sync-service arm64_edge-sync-service ppc64el_edge-sync-service s390x_edge-sync-service"
 
