@@ -398,6 +398,7 @@ jobs:
             docker cp ${id}:agents .
             cp ./agents/* .
             rm -rf ./agents
+            ls -la
             docker container rm ${id}
             docker image rm ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}
           else
