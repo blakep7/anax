@@ -321,7 +321,7 @@ jobs:
               echo "::warning::Artifact not found in build-push.yml workflow, using docker image instead."
               id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_debian:${AGBOT_VERSION})
               docker cp ${id}:debs . && cd debs
-              tar -czvf upload/horizon-agent-linux-deb-${arch_name}.tar.gz *.deb
+              tar -czvf ../upload/horizon-agent-linux-deb-${arch_name}.tar.gz *.deb
               cd ..
               rm -rf ./debs
               docker container rm ${id}
@@ -350,7 +350,7 @@ jobs:
                 echo "::warning::Artifact not found in build-push.yml workflow, using docker image instead."
                 id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_rpm:${AGBOT_VERSION})
                 docker cp ${id}:RPMS . && cd RPMS
-                tar -czvf upload/horizon-agent-linux-rpm-${publish_name}.tar.gz *.rpm
+                tar -czvf ../upload/horizon-agent-linux-rpm-${publish_name}.tar.gz *.rpm
                 cd ..
                 rm -rf ./RPMS
                 docker container rm ${id}
@@ -377,7 +377,7 @@ jobs:
               echo "::warning::Artifact not found in build-push.yml workflow, using docker image instead."
               id=$(docker create --name temp_image_grab ${DOCKERHUB_REGISTRY}/${arch_name}_anax_macpkg:${AGBOT_VERSION})
               docker cp ${id}:macs . && cd macs
-              tar -czvf upload/horizon-agent-macos-pkg-${publish_name}.tar.gz horizon*
+              tar -czvf ../upload/horizon-agent-macos-pkg-${publish_name}.tar.gz horizon*
               cd ..
               rm -rf ./macs
               docker container rm ${id}
