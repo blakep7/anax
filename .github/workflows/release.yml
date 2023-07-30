@@ -411,9 +411,7 @@ jobs:
       # Temporarily use jenkins to upload the mac arm64 package to GHCR?
       - name: Create GitHub Release
         run: |
-          mkdir -p $RUNNER_TEMP/download_agbot && cd $RUNNER_TEMP/download_agbot
-          gh run download -n anax-linux-amd64_agbot-image-v${AGBOT_VERSION}
-          docker load --input amd64_agbot.tar.gz
+          docker pull ${DOCKERHUB_REGISTRY}/amd64_agbot:${AGBOT_VERSION}
           SHORTCOMMIT=$(skopeo inspect docker-daemon:${{ env.DOCKERHUB_REGISTRY }}/amd64_agbot:${AGBOT_VERSION} | jq -r .Labels.release)
 
           COMMITISH=$(
