@@ -282,7 +282,7 @@ jobs:
           mkdir -p ./agents
           if gh run download -n anax-agent-files-v${AGBOT_VERSION} -D ./agents; then
             echo "::debug::Using artifact from build-push.yml run"
-            tar -czvf agents.tar.gz agents
+            tar -czvf agent.tar.gz agents
 
             docker build \
               --no-cache \
@@ -290,7 +290,7 @@ jobs:
               -f Dockerfile.agent.tarball \
               .
 
-            rm -rf ./agents.tar.gz
+            rm -rf ./agent.tar.gz
 
             docker push ${DOCKERHUB_REGISTRY}/anax_agent_files:${AGBOT_VERSION}
           fi
