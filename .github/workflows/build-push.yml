@@ -8,6 +8,8 @@ on:
       - 'open-horizon/anax/master'
       - v2.30
       - v2.29
+      - 'open-horizon/anax/dev-build-verification'
+
         
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
