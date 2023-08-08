@@ -5,7 +5,7 @@ name: build-push
 on:
   push:
     branches:
-      - master
+      - 'open-horizon/master'
       - v2.30
       - v2.29
         
