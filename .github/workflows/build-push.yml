@@ -4,11 +4,8 @@ name: build-push
 # Workflow triggers -- When a push (including merge) is made to the listed branches
 on:
   push:
-    branches:
-      - 'open-horizon/anax/master'
-      - v2.30
-      - v2.29
-      - 'blakep7/anax/dev-build-verification'
+    paths:
+      - 'blakep7/anax/**'
 
         
 env:
