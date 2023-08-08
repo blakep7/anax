@@ -4,9 +4,10 @@ name: build-push
 # Workflow triggers -- When a push (including merge) is made to the listed branches
 on:
   push:
-    paths:
-      - '.github/**'
-
+    branches:
+      - master
+      - v2.30
+      - v2.29
         
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
