@@ -5,7 +5,7 @@ name: build-push
 on:
   push:
     paths:
-      - 'blakep7/anax/**'
+      - '.github/**'
 
         
 env:
