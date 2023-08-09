@@ -1,16 +1,18 @@
+# This workflow is simply to verify that the Anax binaries build successfully, to be used for testing in forks
 name: Build Verification
 
 on: push
 
 jobs:
   build-verification:
+    # Only to run if we are in a fork of Anax
     if: github.repository_owner != 'open-horizon'
     
     runs-on: ubuntu-20.04
 
     strategy:
       matrix:
-        architecture: ['amd64', 'arm64', 'armhf', 'ppc64el', 's390x']
+        architecture: ['amd64']
         platform: ['linux']
 
     env:
