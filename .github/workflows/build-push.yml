@@ -21,7 +21,7 @@ jobs:
 
   # Migrating workflow causes run number to be reset to 1, offset so our versions don't go back in time.
   offset-build-number:
-    if: github.repository_owner == 'open-horizon'
+    if: github.repository_owner == 'blakep7'
     runs-on: ubuntu-20.04
     outputs: 
       BUILD_NUMBER: ${{ steps.offset.outputs.BUILD_NUMBER }}
