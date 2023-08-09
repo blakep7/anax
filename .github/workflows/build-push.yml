@@ -8,8 +8,7 @@ on:
       - master
       - v2.30
       - v2.29
-      - dev-build-verification
-        
+              
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
