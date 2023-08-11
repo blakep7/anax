@@ -8,12 +8,15 @@ on:
       - master
       - v2.30
       - v2.29
+      - test-proposed-changes
         
 env:
   IMAGE_REPO: ${{ vars.DOCKERHUB_REPO }}
   GITHUB_CONTAINER_REGISTRY: ghcr.io/${{ github.repository_owner }}
   RUN_NUMBER: ${{ github.run_number }}
   RUN_NUMBER_OFFSET: ${{ vars.RUN_NUMBER_OFFSET }}
+  # used in docker_push_script.sh and package_push.sh scripts to push "testing" tags with the branch name appended to it
+  GH_BRANCH: ${{ github.ref_name }} 
 
 # Jobs executed when workflow is triggered
 jobs:

@@ -19,6 +19,9 @@ for image in "${images[@]}"; do
 
         docker tag ${IMAGE_REPO}/${image}:testing ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
         docker push ${GITHUB_CONTAINER_REGISTRY}/${image}:testing
+    else
+        # append the branch name to testing tags for when we're building older versions of anax for testing
+        docker push ${IMAGE_REPO}/${image}:testing_${GH_BRANCH}
     fi
 
 done
