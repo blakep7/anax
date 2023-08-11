@@ -491,10 +491,13 @@ jobs:
                 -f Dockerfile.macpkg.tarball \
                 .
 
-            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then \
-                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing; \
-                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
-                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing; \
+            if [[ "$GITHUB_REF" == 'refs/heads/master' ]]; then 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing 
+                docker push ${GITHUB_CONTAINER_REGISTRY}/${{ matrix.architecture }}_anax_macpkg:testing
+            else
+                docker tag ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH} 
+                docker push ${IMAGE_REPO}/${{ matrix.architecture }}_anax_macpkg:testing_${GH_BRANCH}
             fi
           env:
             ANAX_IMAGE_VERSION: ${{ needs.mac-build.outputs.ANAX_VERSION }}
